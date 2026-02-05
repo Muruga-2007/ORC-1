@@ -1,100 +1,233 @@
-# **VeriChain** - Document Verification System using AI and Blockchain
+# VeriChain - Local OCR Document Verification System
 
-## **Vision**
-VeriChain aims to revolutionize document verification by leveraging AI for text extraction and blockchain for secure, tamper-proof data storage. The system automates the identity verification process, improving efficiency, security, and scalability for entry and exit management systems.
+## 🎯 Overview
 
-## **Features**
-- **AI-powered OCR**: Uses the Gemini API for Optical Character Recognition (OCR) to extract text from document images.
-- **Blockchain Security**: Employs the NeoX blockchain to store document data hashes using the SHA-256 algorithm, ensuring immutability and tamper-proof storage.
-- **Entry-Exit Automation**: Automatically detects users upon entry or exit using the verified identity card, enabling seamless, touchless access control.
-- **Web-Based Interface**: The front-end is built using HTML5, Tailwind CSS, JavaScript, and Bootstrap, ensuring a modern, responsive design.
-- **Privacy Protection**: Only the hash of the document information is stored on the blockchain, ensuring user privacy while maintaining document authenticity.
-- **Scalability**: The system can be expanded to support multiple document types and identities beyond the initial implementation of the Rise In X NeoX identity card.
+VeriChain is a blockchain-based document verification system that uses **100% local OCR** - no external API dependencies! It combines PaddleOCR for text extraction with Neo X blockchain for immutable verification.
 
-## **Project Structure**
+## ✨ Key Features
+
+- **🔒 Fully Local OCR**: Uses PaddleOCR - no API keys, no external calls, works offline
+- **🔗 Blockchain Verification**: Stores document hashes on Neo X Testnet
+- **🎨 Smart Text Extraction**: Advanced preprocessing and pattern matching
+- **📊 Database Tracking**: SQLite database for quick lookups
+- **🔍 Fuzzy Matching**: Handles OCR variations gracefully
+
+## 🚀 Quick Start
+
+### 1. Install Dependencies
+
+```bash
+pip install -r requirements.txt
 ```
-.
-├── .env
-├── app.py
-├── requirements.txt
-├── README.md
-├── document_verification.db
-├── static/
-│   ├── tailwind.min.css
-│   ├── main.css
-│   ├── favicon.jpg
-│   ├── bootstrap.min.css
-├── templates/
+
+### 2. Test OCR (Optional)
+
+```bash
+# Test OCR initialization
+python test_ocr.py
+
+# Test with a certificate image
+python test_ocr.py /path/to/certificate.jpg
+```
+
+### 3. Run the Application
+
+```bash
+python app.py
+```
+
+The app will start on `http://localhost:5001`
+
+## 📁 Project Structure
+
+```
+verichain/
+├── app.py                      # Main Flask application
+├── local_ocr.py               # Local OCR module (PaddleOCR)
+├── test_ocr.py                # OCR testing script
+├── requirements.txt           # Python dependencies
+├── .env                       # Environment configuration
+├── templates/                 # HTML templates
 │   ├── index.html
-│   ├── result.html
 │   ├── upload.html
 │   ├── verify.html
-├── uploads/
+│   └── history.html
+├── uploads/                   # Uploaded documents
+└── document_verification.db   # SQLite database
 ```
 
-## **How It Works**
-1. **Document Capture**: The user captures an image of their document (currently using the Rise In X NeoX identity card).
-2. **OCR Process**: The AI-powered OCR extracts text from the document.
-3. **Hash Generation**: The SHA-256 algorithm generates a hash from the extracted text.
-4. **Blockchain Storage**: The generated hash is stored securely on the NeoX blockchain, ensuring tamper-proof storage.
-5. **Automated Detection**: When the user enters or leaves the location again, the system automatically detects the card and verifies it against the stored hash.
+## 🔧 How It Works
 
-## **ScreenShots**
-![Image 3](./images/img3.png)
-![Image 2](./images/img2.png)
-![Image 1](./images/img1.png)
+### Upload & Issue Process
 
-## **Technologies Used**
-- **AI Gemini API**: For Optical Character Recognition (OCR) to extract text from document images.
-- **NeoX Blockchain**: Ensures secure, decentralized storage of document information hashes.
-- **HTML5**: For structuring the web application.
-- **Tailwind CSS**: For responsive and modern design.
-- **JavaScript**: For handling the OCR process, hash generation, and blockchain interactions.
-- **Bootstrap**: Provides a sleek, responsive user interface.
+1. **Upload Certificate**: User uploads a certificate image
+2. **Local OCR Extraction**: PaddleOCR extracts text from the image
+   - Preprocessing: Grayscale, denoising, contrast enhancement
+   - Text extraction with confidence scoring
+   - Smart parsing for name and event details
+3. **Hash Generation**: Creates SHA-256 hash from extracted data
+4. **Blockchain Storage**: Stores hash on Neo X Testnet
+5. **Database Record**: Saves details locally for quick verification
 
-## **Deployment**
-You can Host it on Localhost
-using the given commands
+### Verification Process
 
-To deploy the application locally:
+1. **Upload or Enter Hash**: User uploads certificate or enters hash
+2. **OCR/Hash Extraction**: Extracts details using local OCR
+3. **Database Lookup**: Searches local database
+4. **Blockchain Verification**: Validates against blockchain
+5. **Result**: Returns verification status with blockchain proof
 
-1. Clone the repository and install requirements:
-   ```bash
-   git clone https://github.com/inder-26/verichain.git
-   cd verichain
-   pip install -r requirements.txt
-   ```
-2. Run `app.py` using python to interact with the system.
-   ```bash
-   python app.py
-   ```
-3. Open `http://127.0.0.1:5000` after running `app.py`
+## 🧠 OCR Technology
 
----
+### PaddleOCR Features
 
-### **Future Enhancements**
-- **Multi-Document Support**: Extend the system to handle various types of documents, such as passports, driver's licenses, etc.
-- **Mobile App**: Build a mobile application to allow users to scan and verify documents on the go.
-- **Advanced AI Integration**: Improve OCR accuracy by integrating more advanced AI models.
-- **Global Blockchain Integration**: Add support for multiple blockchain networks to enhance decentralization and security.
+- **Multi-language support** (configured for English)
+- **Rotation detection** for tilted documents
+- **High accuracy** with deep learning models
+- **GPU support** (optional, CPU works fine)
+- **Completely offline** after initial model download
 
----
+### Image Preprocessing
 
-### **Contributing**
-We welcome contributions! If you'd like to improve VeriChain, feel free to fork the repository, make your changes, and submit a pull request.
+1. Grayscale conversion
+2. Noise reduction (fastNlMeansDenoising)
+3. Contrast enhancement (CLAHE)
+4. Adaptive thresholding
 
+### Text Parsing
+
+Multiple regex patterns for robust extraction:
+- Name patterns: "awarded to", "presented to", capitalized names
+- Event patterns: "Hackathon", event names, dates
+- Fallback to manual input if OCR fails
+
+## 🌐 Blockchain Integration
+
+- **Network**: Neo X Testnet
+- **Method**: Data anchoring via transactions
+- **Hash Storage**: SHA-256 in transaction data field
+- **Explorer**: https://xt4scan.ngd.network
+
+## 📝 Environment Variables
+
+Create a `.env` file with:
+
+```env
+# Blockchain Configuration
+WEB3_PROVIDER=https://neoxt4seed1.ngd.network
+PRIVATE_KEY=your_private_key_here
+CHAIN_ID=12227332
+EXPLORER_URL=https://xt4scan.ngd.network
+
+# Contract (optional, uses legacy method if not set)
+NFT_CONTRACT_ADDRESS=0x0000000000000000000000000000000000000000
+
+# Flask
+FLASK_SECRET_KEY=your-secret-key-here
+```
+
+## 🧪 Testing
+
+### Test OCR Functionality
+
+```bash
+python test_ocr.py path/to/test_certificate.jpg
+```
+
+### Test with Sample Certificates
+
+1. Create a test certificate with:
+   - Participant name (e.g., "John Doe")
+   - Event name (e.g., "Neo X Hackathon")
+2. Upload through the web interface
+3. Verify the extraction results
+
+## 🔒 Security Notes
+
+- Private keys should be kept secure (use environment variables)
+- This is a testnet implementation (not for production)
+- Database is local SQLite (consider PostgreSQL for production)
+
+## 🎨 Web Interface
+
+- **Home**: Landing page with navigation
+- **Upload**: Upload certificates and issue to blockchain
+- **Verify**: Verify certificates by image or hash
+- **History**: View all issued certificates
+
+## 📦 Dependencies
+
+### Core
+- **Flask**: Web framework
+- **web3**: Blockchain interaction
+- **python-dotenv**: Environment management
+
+### OCR
+- **paddleocr**: Main OCR engine
+- **paddlepaddle**: Deep learning framework
+- **opencv-python**: Image processing
+- **Pillow**: Image handling
+- **numpy**: Numerical operations
+
+### Optional
+- **pytesseract**: Fallback OCR (requires system Tesseract)
+
+## 🚧 Troubleshooting
+
+### PaddleOCR Installation Issues
+
+If you encounter issues:
+
+```bash
+# Try installing paddlepaddle-cpu specifically
+pip install paddlepaddle -i https://mirror.baidu.com/pypi/simple
+
+# Or use conda
+conda install paddlepaddle -c paddle
+```
+
+### OCR Not Extracting Text
+
+1. Check image quality (should be clear, high resolution)
+2. Ensure text is horizontal (or enable rotation detection)
+3. Try preprocessing with different parameters
+4. Use manual input as fallback
+
+### Blockchain Connection Issues
+
+1. Verify Neo X Testnet is accessible
+2. Check private key and address
+3. Ensure sufficient GAS for transactions
+4. Check CHAIN_ID matches network
+
+## 🎯 Future Enhancements
+
+- [ ] Multi-language OCR support
+- [ ] Batch processing
+- [ ] PDF document support
+- [ ] QR code generation for certificates
+- [ ] Mobile app integration
+- [ ] Advanced analytics dashboard
+
+## 📄 License
+
+MIT License - Feel free to use and modify!
+
+## 🤝 Contributing
+
+Contributions welcome! Please:
 1. Fork the repository
-2. Create a new branch (`git checkout -b feature-name`)
-3. Commit your changes (`git commit -m 'Add some feature'`)
-4. Push to the branch (`git push origin feature-name`)
-5. Create a pull request
+2. Create a feature branch
+3. Test your changes
+4. Submit a pull request
+
+## 📞 Support
+
+For issues or questions:
+- Check the troubleshooting section
+- Review test_ocr.py output
+- Check Flask logs for errors
 
 ---
 
-### **License**
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
----
-
-### **Contact**
-For questions or inquiries, please reach out at [inder26112004@gmail.com](mailto:inder26112004@gmail.com).
+**Built with ❤️ using PaddleOCR and Neo X Blockchain**

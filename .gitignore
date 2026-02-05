@@ -1,0 +1,14 @@
+.env
+*.db
+*.db.bak
+__pycache__/
+uploads/
+*.pyc
+.DS_Store
+debug_paddle.py
+check_txn.py
+test_verify.py
+test_ocr.py
+*.png
+*.jpeg
+*.jpg

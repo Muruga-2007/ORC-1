@@ -1,90 +1,305 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="{{ url_for('static', filename='favicon.jpg') }}" type="image/x-icon">
-    <link rel="stylesheet" href="{{ url_for('static', filename='tailwind.min.css') }}">
-    <title>Upload Data</title>
+    <title>Issue Certificate - VeriChain</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f1f5f9;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .back-btn {
+            color: #94a3b8;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 3rem;
+            text-align: center;
+        }
+
+        .upload-area {
+            border: 2px dashed #334155;
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 2rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(0, 242, 254, 0.05);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: #94a3b8;
+            margin-bottom: 2rem;
+        }
+
+        input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1rem 3rem;
+            border-radius: 50px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: #000;
+        }
+
+        .btn-loading {
+            opacity: 0.7;
+            cursor: wait;
+        }
+
+        #preview {
+            max-width: 100%;
+            border-radius: 12px;
+            display: none;
+            margin-top: 1.5rem;
+        }
+
+        .status-box {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 12px;
+            display: none;
+        }
+
+        .success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10b981;
+            color: #10b981;
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #FFF;
+            border-bottom-color: var(--primary);
+            border-radius: 50%;
+            display: none;
+            margin: 2rem auto;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <div class="h-screen font-sans text-gray-900 bg-gray-300 border-box">
-        <div class="flex justify-center w-full mx-auto">
-            <div class="flex flex-col items-center justify-center w-full h-auto my-20 bg-white sm:w-3/4 sm:rounded-lg sm:shadow-xl">
-                <div class="mt-10 mb-10 text-center">
-                    <h2 class="text-2xl font-semibold mb-2">Upload data from files</h2>
-                    <p class="text-xs text-gray-500">File should be of format .png, .jpg, .jpeg</p>
-                </div>
-                <form id="file-upload-form" action="/upload_data" method="POST" enctype="multipart/form-data" class="relative w-4/5 h-48 max-w-xs mb-10 bg-white bg-gray-100 rounded-lg shadow-inner">
-                    <input type="file" id="file-upload" name="image" class="hidden" accept=".jpg, .jpeg, .png">
-                    <label for="file-upload" class="z-20 flex flex-col-reverse items-center justify-center w-full h-full cursor-pointer">
-                        <p class="z-10 text-xs font-light text-center text-gray-500">Drag & Drop your files here</p>
-                        <svg class="z-10 w-8 h-8 text-indigo-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path>
-                        </svg>
-                    </label>
-                </form>
-                <label id="status" class="hidden">✅ Done</label>
-                    <label id="transaction"></label>
-                <button type="submit" form="file-upload-form" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full mt-4">
-                    Upload
-                </button>
+    <div class="container">
+        <a href="/" class="back-btn">← Back to Home</a>
+        <div class="glass-card">
+            <h1>Issue Certificate</h1>
+            <p>Upload a certificate image to extract data and anchor it to Neo X.</p>
 
-                <div id="progress-container" class="w-3/4 h-4 bg-gray-200 rounded-full mt-4 hidden">
-                    <div id="progress-bar" class="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full" style="width: 0%;">0%</div>
+            <form id="issueForm">
+                <div class="upload-area" id="dropZone">
+                    <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round"
+                        style="color: var(--primary); margin-bottom: 1rem;">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <div id="uploadText">Drag & Drop or Click to Upload</div>
+                    <img id="preview" src="" alt="Preview">
+                    <input type="file" name="image" id="fileInput" accept="image/*" required>
                 </div>
 
-                <div id="response" class="mt-4 text-center text-gray-700"></div>
+                <div id="manualInput" style="display: none; text-align: left; margin-bottom: 2rem;">
+                    <p style="color: #f59e0b; font-size: 0.9rem; margin-bottom: 1rem;">⚠️ API busy? Enter details
+                        manually:</p>
+                    <div style="margin-bottom: 1rem;">
+                        <label
+                            style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: #94a3b8;">Participant
+                            Name</label>
+                        <input type="text" name="manual_name" placeholder="Name on certificate"
+                            style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white;">
+                    </div>
+                    <div>
+                        <label
+                            style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: #94a3b8;">Hackathon
+                            Name</label>
+                        <input type="text" name="manual_hackathon" placeholder="e.g. Neo X Hackathon"
+                            style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white;">
+                    </div>
+                </div>
+
+                <button type="button"
+                    onclick="document.getElementById('manualInput').style.display='block'; this.style.display='none';"
+                    style="background: none; border: none; color: var(--secondary); cursor: pointer; margin-bottom: 1rem; font-size: 0.9rem;">+
+                    Manual Entry (API Fallback)</button>
+                <br>
+                <button type="submit" class="btn btn-primary" id="submitBtn">Issue to Blockchain</button>
+            </form>
+
+            <div class="loader" id="loader"></div>
+            <div id="progressLogs"
+                style="text-align: left; font-size: 0.8rem; color: #94a3b8; margin-top: 1rem; border-top: 1px solid #334155; padding-top: 1rem; display: none;">
+                <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary);">System Progress:</div>
+                <div id="logContent"></div>
             </div>
+            <div id="status" class="status-box"></div>
         </div>
     </div>
 
     <script>
-        // Handle file upload and progress
-        const form = document.getElementById('file-upload-form');
-        const progressContainer = document.getElementById('progress-container');
-        const progressBar = document.getElementById('progress-bar');
-        const responseDiv = document.getElementById('response');
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('preview');
+        const uploadText = document.getElementById('uploadText');
+        const form = document.getElementById('issueForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const status = document.getElementById('status');
+        const loader = document.getElementById('loader');
+        const progressLogs = document.getElementById('progressLogs');
+        const logContent = document.getElementById('logContent');
 
-        form.addEventListener('submit', function(event) {
-            event.preventDefault();
-            button = event.submitter;
-            button.disabled = true;
+        function logStatus(msg) {
+            progressLogs.style.display = 'block';
+            const logEntry = document.createElement('div');
+            logEntry.style.marginBottom = '4px';
+            logEntry.innerHTML = `> ${msg}`;
+            logContent.appendChild(logEntry);
+            progressLogs.scrollTop = progressLogs.scrollHeight;
+        }
+
+        fileInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    uploadText.style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
             const formData = new FormData(form);
 
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', '/upload_data', true);
+            submitBtn.style.display = 'none';
+            loader.style.display = 'block';
+            status.style.display = 'none';
+            logContent.innerHTML = '';
 
-            xhr.upload.onprogress = function(e) {
-                if (e.lengthComputable) {
-                    const percentComplete = (e.loaded / e.total) * 100;
-                    progressContainer.classList.remove('hidden');
-                    progressBar.style.width = percentComplete + '%';
-                    progressBar.innerText = Math.round(percentComplete) + '%';
-                }
-            };
+            logStatus("Analyzing document structure...");
+            logStatus("Extracting data via Gemini AI...");
 
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    status_label = document.getElementById('status');
-                    status_label.classList.remove('hidden');
-                    progressContainer.classList.add('hidden');
-                    // get the transaction id from the response
-                    response = xhr.responseText;
-                    console.log(response);
-                    transaction_label = document.getElementById('transaction');
-                    transaction_label.innerText = "Transaction Hash: " + response;
+            try {
+                const res = await fetch('/upload_and_issue', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                logStatus("Computing SHA-256 Fingerprint...");
+                const data = await res.json();
+
+                logStatus("Anchoring NFT to Polygon Amoy...");
+                logStatus("Waiting for blockchain confirmation (~3s)...");
+
+                loader.style.display = 'none';
+                status.style.display = 'block';
+
+                if (data.status === 'success') {
+                    status.className = 'status-box success';
+                    status.innerHTML = `
+                        <strong>Successfully Issued NFT Certificate!</strong><br>
+                        Participant: ${data.name}<br>
+                        Hackathon: ${data.hackathon}<br>
+                        Token ID: #${data.token_id}<br>
+                        <div style="font-size: 0.75rem; color: #94a3b8; margin: 0.5rem 0;">Hash: ${data.hash}</div>
+                        TX Hash: <a href="${data.explorer_url}/tx/${data.txn_hash}" target="_blank" style="color: inherit; overflow-wrap: break-word;">${data.txn_hash.substring(0, 20)}...</a>
+                    `;
                 } else {
-                    responseDiv.innerText = 'Upload failed. Please try again.';
+                    status.className = 'status-box error';
+                    status.innerText = "Error: " + (data.error || "Upload failed");
+                    submitBtn.style.display = 'inline-block';
                 }
-            };
-
-            xhr.onerror = function() {
-                responseDiv.innerText = 'Upload failed. Please try again.';
-            };
-
-            xhr.send(formData);
-        });
+            } catch (err) {
+                loader.style.display = 'none';
+                status.style.display = 'block';
+                status.className = 'status-box error';
+                status.innerText = "System error occurred.";
+                submitBtn.style.display = 'inline-block';
+            }
+        };
     </script>
 </body>
+
 </html>

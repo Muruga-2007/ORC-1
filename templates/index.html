@@ -1,38 +1,240 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeoX Chain</title>
-    <!-- favicon -->
-    <link rel="icon" href="{{ url_for('static', filename='favicon.jpg') }}" type="image/x-icon">
-    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
-  </head>
-  <body data-aos-easing="ease" data-aos-duration="1000" data-aos-delay="0">
-    <div class="loader-wraper" style="display: none;">
-      <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
-    </div>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VeriChain - Blockchain Verified OCR</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #00f2fe;
+      --secondary: #4facfe;
+      --bg: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --text: #f1f5f9;
+    }
 
-    <section class="home py-5 d-flex align-items-center" id="header">
-      <div class="container text text-light py-5 aos-init aos-animate" data-aos="fade-right">
-        <h1 class="headline text">
-          Automate <span class="text-info">verification</span>  <br>
-          within your Organization
-        </h1>
-        <p class="para  py-3">
-          The NeoXChain platform is a top-tier Document Verification solution <br>
-          designed to improve the efficiency and security of your operations.
-        </p>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+    }
 
-        <div class="my-3">
-          <a class="btn bg-danger text-white" href="/upload_details">Upload Details</a>
-          <a class="btn bg-danger text-white" href="/verify">Go Verify</a>
+    body {
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      min-height: 100vh;
+      background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 0;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 70vh;
+      gap: 2rem;
+    }
+
+    .hero-content {
+      flex: 1;
+    }
+
+    .hero-title {
+      font-size: 4rem;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+    }
+
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: #94a3b8;
+      margin-bottom: 2rem;
+      max-width: 600px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 1rem 2rem;
+      border-radius: 50px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+      font-size: 1rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      color: #000;
+      box-shadow: 0 10px 20px rgba(0, 242, 254, 0.2);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(0, 242, 254, 0.4);
+    }
+
+    .btn-outline {
+      border: 2px solid #334155;
+      color: #f1f5f9;
+      margin-left: 1rem;
+    }
+
+    .btn-outline:hover {
+      background: #334155;
+    }
+
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 2.5rem;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-top: 4rem;
+    }
+
+    .feature-item {
+      padding: 2rem;
+      transition: transform 0.3s ease;
+    }
+
+    .feature-item:hover {
+      transform: scale(1.02);
+    }
+
+    .blob {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: var(--primary);
+      filter: blur(100px);
+      opacity: 0.1;
+      z-index: -1;
+      border-radius: 50%;
+    }
+
+    @media (max-width: 768px) {
+      .hero {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .hero-title {
+        font-size: 2.5rem;
+      }
+
+      .btn-outline {
+        margin-left: 0;
+        margin-top: 1rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="blob" style="top: 10%; right: 10%;"></div>
+  <div class="blob" style="bottom: 10%; left: 10%; background: var(--secondary);"></div>
+
+  <div class="container">
+    <nav>
+      <div class="logo">VeriChain.</div>
+      <div>
+        <a href="/history" style="color: #94a3b8; text-decoration: none; font-weight: 500;">History</a>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <div class="hero-content">
+        <h1 class="hero-title">Automate <span style="color: var(--primary)">Verification</span> On-Chain.</h1>
+        <p class="hero-subtitle">The first document verification engine powered by Google Gemini OCR and Neo X
+          Blockchain. Secure, immutable, and instant.</p>
+        <div class="cta-group">
+          <a href="/upload_details" class="btn btn-primary">Issue New Certificate</a>
+          <a href="/verify" class="btn btn-outline">Verify Document</a>
         </div>
       </div>
-      <!-- end of container -->
-    </section>
-    <!-- end of home -->
+      <div class="hero-image">
+        <div class="glass-card" style="width: 100%; max-width: 450px;">
+          <div style="font-size: 0.8rem; color: var(--primary); margin-bottom: 1rem; font-weight: 600;">BLOCKCHAIN
+            STATUS</div>
+          <div
+            style="height: 15px; background: rgba(51, 65, 85, 0.5); border-radius: 10px; margin-bottom: 2rem; position: relative; overflow: hidden;">
+            <div
+              style="position: absolute; width: 60%; height: 100%; background: var(--primary); animation: slide 2s infinite linear;">
+            </div>
+          </div>
+          <style>
+            @keyframes slide {
+              from {
+                left: -60%;
+              }
 
-    </body>
+              to {
+                left: 100%;
+              }
+            }
+          </style>
+          <div style="color: #94a3b8; font-size: 0.9rem;">Connected to Neo X Testnet</div>
+          <div style="margin-top: 2rem; display: flex; align-items: center; gap: 1rem;">
+            <div
+              style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981;">
+            </div>
+            <div style="font-weight: 600;">System Active</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="feature-grid">
+      <div class="glass-card feature-item">
+        <h3 style="margin-bottom: 1rem; color: var(--primary);">Gemini OCR</h3>
+        <p style="color: #94a3b8; font-size: 0.95rem;">Advanced AI-powered text extraction with 99.9% accuracy across
+          multiple document formats.</p>
+      </div>
+      <div class="glass-card feature-item">
+        <h3 style="margin-bottom: 1rem; color: var(--secondary);">Neo X Immutable</h3>
+        <p style="color: #94a3b8; font-size: 0.95rem;">Every document hash is anchored to the Neo X Testnet, ensuring
+          absolute tamper-resistance.</p>
+      </div>
+      <div class="glass-card feature-item">
+        <h3 style="margin-bottom: 1rem; color: #a855f7;">Instant Validation</h3>
+        <p style="color: #94a3b8; font-size: 0.95rem;">Verify the authenticity of any document in seconds by
+          cross-referencing on-chain fingerprints.</p>
+      </div>
+    </div>
+  </div>
+</body>
+
 </html>

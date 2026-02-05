@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issuance History - VeriChain</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00f2fe;
+            --secondary: #4facfe;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f1f5f9;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .back-btn {
+            color: #94a3b8;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 2rem;
+            overflow-x: auto;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--primary);
+            border-bottom: 1px solid #334155;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+            font-size: 0.9rem;
+        }
+
+        .txn-link {
+            color: var(--secondary);
+            text-decoration: none;
+            font-family: monospace;
+        }
+
+        .txn-link:hover {
+            text-decoration: underline;
+        }
+
+        .timestamp {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">← Back to Home</a>
+        <h1>Issuance History</h1>
+        <div class="glass-card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Participant</th>
+                        <th>Hackathon</th>
+                        <th>NFT Token ID</th>
+                        <th>Hash Fingerprint</th>
+                        <th>Issuer</th>
+                        <th>Blockchain TX</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for doc in documents %}
+                    <tr>
+                        <td style="font-weight: 600;">{{ doc['participant_name'] }}</td>
+                        <td>{{ doc['hackathon_name'] }}</td>
+                        <td>#{{ doc['token_id'] }}</td>
+                        <td title="{{ doc['document_hash'] }}"><code
+                                style="font-size: 0.75rem; color: var(--secondary);">{{ doc['document_hash'][:12] }}...</code>
+                        </td>
+                        <td><code style="font-size: 0.75rem;"
+                                title="{{ doc['issuer_address'] }}">{{ doc['issuer_address'][:10] }}...</code></td>
+                        <td><a href="{{ explorer_url }}/tx/{{ doc['txn_hash'] }}" target="_blank" class="txn-link"
+                                title="{{ doc['txn_hash'] }}">{{
+                                doc['txn_hash'][:12] }}...</a></td>
+                        <td class="timestamp">{{ doc['timestamp'] }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% if not documents %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 3rem; color: #94a3b8;">No records found.
+                            Issue your first certificate!</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+
+</html>
