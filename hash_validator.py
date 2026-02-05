@@ -11,8 +11,13 @@ class HashValidator:
     Validates document hashes against the database and blockchain
     """
     
-    def __init__(self, db_path='document_verification.db'):
-        self.db_path = db_path
+    def __init__(self, db_path=None):
+        if db_path is None:
+            import os
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            self.db_path = os.path.join(base_dir, 'document_verification.db')
+        else:
+            self.db_path = db_path
     
     def get_db_connection(self):
         """Get database connection"""

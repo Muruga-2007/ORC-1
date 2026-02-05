@@ -78,24 +78,30 @@ NFT_ABI = [
 ]
 
 # DB Initialization
+def get_db_path():
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base_dir, 'document_verification.db')
+
 def get_db_connection():
-    conn = sqlite3.connect('document_verification.db')
+    conn = sqlite3.connect(get_db_path())
     conn.row_factory = sqlite3.Row
     return conn
 
 def init_db():
     conn = get_db_connection()
-    # Create table if not exists
+    # Create table if not exists with product-focused columns
     conn.execute('''
         CREATE TABLE IF NOT EXISTS documents (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            participant_name TEXT,
-            hackathon_name TEXT,
-            document_hash TEXT,
+            participant_name TEXT, -- This will be Product Name
+            hackathon_name TEXT,   -- This will be Brand/Batch
+            document_hash TEXT,    -- Unique Product Fingerprint
             txn_hash TEXT,
             token_id INTEGER,
             contract_address TEXT,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            issuer_address TEXT,
+            document_content TEXT  -- Full technical specs or label scan
         )
     ''')
     
@@ -143,8 +149,8 @@ def calculate_hash(data):
     """
     content = data.get("document_content", "")
     if not content:
-        # Fallback for old records if needed
-        keys = ["name", "hackathon_name"]
+        # Fallback for old records or manual entry
+        keys = ["name", "brand", "batch_no"]
         content = "|".join([normalize_text(data.get(k, "")) for k in keys])
     
     normalized_content = normalize_text(content)
@@ -302,14 +308,14 @@ def upload_and_issue():
 
         return jsonify({
             "status": "success",
-            "title": doc_title,
+            "product_name": doc_title,
             "hash": doc_hash,
             "txn_hash": txn_hex,
             "token_id": token_id,
-            "aadhaar_data": {
-                "name": details.get("name"),
-                "address": details.get("address"),
-                "phone": details.get("phone")
+            "product_details": {
+                "brand": details.get("brand", "Verified Brand"),
+                "serial_no": details.get("serial_no", "N/A"),
+                "mfg_date": details.get("mfg_date", "N/A")
             },
             "explorer_url": EXPLORER_URL
         })
@@ -448,16 +454,16 @@ def verify_document():
         
         return jsonify({
             "status": "verified" if blockchain_verified else "failed",
-            "message": f"Global Document Verification: {bc_msg}",
+            "message": f"Global Authenticity Check: {bc_msg}",
             "data": {
-                "title": record['participant_name'],
+                "product_name": record['participant_name'],
+                "brand": record['hackathon_name'],
                 "txn_hash": txn_hash,
                 "hash": stored_hash,
                 "issuer_address": record['issuer_address'] if 'issuer_address' in record.keys() else None,
-                "aadhaar_data": {
-                    "name": details.get("name", record['participant_name']),
-                    "address": details.get("address", "Refer to On-Chain Proof"),
-                    "phone": details.get("phone", "N/A")
+                "product_details": {
+                    "scan_origin": "Genuine Label Scan",
+                    "verification_type": "On-Chain Protocol 2.0"
                 },
                 "blockchain_status": bc_msg,
                 "explorer_url": EXPLORER_URL
@@ -521,8 +527,6 @@ def api_all_hashes():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/search/name/<name>', methods=['GET'])
-def api_search_by_name(name):
     """Search documents by participant name"""
     try:
         validator = HashValidator()

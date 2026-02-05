@@ -106,7 +106,7 @@ class LocalOCR:
     
     def extract_document_details(self, image_path: str) -> Dict[str, str]:
         """
-        Extract full content and specialized fields (Aadhaar: Name, Address, Phone)
+        Extract product label details (Brand, Serial No, Mfg Date)
         """
         # Extract text from image
         full_text = self.extract_text(image_path)
@@ -117,32 +117,32 @@ class LocalOCR:
         
         print(f"\n--- Extracted Content (Preview) ---\n{full_text[:500]}...\n-------------------\n")
         
-        # Original Aadhaar extraction logic
         details = {
             "document_content": re.sub(r'\s+', ' ', full_text).strip(),
             "full_extracted_text": full_text,
-            "name": "Unknown",
-            "address": "Unknown",
-            "phone": "Unknown",
-            "document_title": "General Document"
+            "product_name": "Authentic Item",
+            "brand": "Genuine Brand",
+            "serial_no": "Unknown",
+            "mfg_date": "N/A",
+            "document_title": "Product Label"
         }
 
-        # 1. Extract Name (Aadhaar specific)
-        # Usually name is one of the first few lines
-        name_match = re.search(r"([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)", full_text)
-        if name_match:
-            details["name"] = name_match.group(1).strip()
-            details["document_title"] = f"Aadhaar: {details['name']}"
+        # 1. Look for Brand (Usually capital letters at top or near 'Brand:')
+        brand_match = re.search(r"(?:Brand|Manufacturer|BY)[\s:]+([A-Z0-9\s]{3,20})", full_text, re.IGNORECASE)
+        if brand_match:
+            details["brand"] = brand_match.group(1).strip()
 
-        # 2. Extract Phone Number
-        phone_match = re.search(r"(\b\d{10}\b|\b\d{4}\s\d{4}\s\d{4}\b)", full_text)
-        if phone_match:
-            details["phone"] = phone_match.group(1).strip()
+        # 2. Look for Serial/Product ID
+        serial_match = re.search(r"(?:S/N|Serial|ID|Code|UID)[\s:]+([A-Z0-9-]+)", full_text, re.IGNORECASE)
+        if serial_match:
+            details["serial_no"] = serial_match.group(1).strip()
+            details["product_name"] = f"Product {details['serial_no']}"
+            details["document_title"] = details["product_name"]
 
-        # 3. Extract Address (Look for keywords like Address, S/O, D/O, W/O)
-        address_match = re.search(r"(?:Address:|Address|S/O|D/O|W/O)[\s:]+([\s\S]{10,200}?(?=\d{6}|$))", full_text, re.IGNORECASE)
-        if address_match:
-            details["address"] = re.sub(r'\s+', ' ', address_match.group(1)).strip()
+        # 3. Look for Manufacturing/Expiry Date
+        date_match = re.search(r"(?:MFD|MFG|Batch Date)[\s:]+([\d\/-]{6,10})", full_text, re.IGNORECASE)
+        if date_match:
+            details["mfg_date"] = date_match.group(1).strip()
 
         return details
 
