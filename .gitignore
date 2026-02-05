@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+uploads/
+document_verification.db
+document_verification.db.bak
+.venv/
+env/
+venv/
+.pytest_cache/
+.DS_Store
