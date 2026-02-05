@@ -1,0 +1,26 @@
+{
+  "name": "verichain",
+  "version": "1.0.0",
+  "description": "**VeriChain** is a state-of-the-art brand protection and product authenticity platform. It leverages **AI-driven Vision (PaddleOCR)** and the **Neo X Blockchain** to create an immutable, decentralized registry for luxury goods, electronics, and high-value shipments.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/inder-26/verichain.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/inder-26/verichain/issues"
+  },
+  "homepage": "https://github.com/inder-26/verichain#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.4.0",
+    "dotenv": "^17.2.3",
+    "hardhat": "^2.28.4"
+  }
+}

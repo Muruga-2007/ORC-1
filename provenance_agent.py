@@ -9,7 +9,7 @@ class ProvenanceAgent:
     Advanced Authenticity Verification and Provenance Intelligence Agent.
     Operates on VeriChain protocol to provide luxury-grade authenticity assurance.
     """
-    def __init__(self, db_path=None, web3_provider="https://testnet.rpc.banelabs.org"):
+    def __init__(self, db_path=None, web3_provider="https://neoxt4seed1.ngd.network"):
         if db_path is None:
             base_dir = os.path.dirname(os.path.abspath(__file__))
             self.db_path = os.path.join(base_dir, 'document_verification.db')
@@ -17,6 +17,18 @@ class ProvenanceAgent:
             self.db_path = db_path
         
         self.web3 = Web3(Web3.HTTPProvider(web3_provider))
+        self.nft_abi = [
+            {
+                "anonymous": False,
+                "inputs": [
+                    {"indexed": True, "internalType": "address", "name": "from", "type": "address"},
+                    {"indexed": True, "internalType": "address", "name": "to", "type": "address"},
+                    {"indexed": True, "internalType": "uint256", "name": "tokenId", "type": "uint256"}
+                ],
+                "name": "Transfer",
+                "type": "event"
+            }
+        ]
         
     def _get_conn(self):
         conn = sqlite3.connect(self.db_path)
@@ -29,8 +41,8 @@ class ProvenanceAgent:
         """
         # 1. Database Lookup
         conn = self._get_conn()
-        record = conn.execute('SELECT * FROM documents WHERE document_hash = ? OR txn_hash = ?', 
-                             (product_id, product_id)).fetchone()
+        record = conn.execute('SELECT * FROM documents WHERE document_hash = ? OR txn_hash = ? OR token_id = ?', 
+                             (product_id, product_id, product_id)).fetchone()
         conn.close()
 
         if not record:
@@ -42,8 +54,7 @@ class ProvenanceAgent:
         risk_flags = []
         confidence = 100
 
-        # 3. Blockchain Lifecycle Reconstruction (Conceptual for now, can query logs in production)
-        # For this prototype, we treat the registration as the Genesis event.
+        # 3. Blockchain Lifecycle Reconstruction
         timeline = [
             {
                 "event": "Genesis Protocol Registration",
@@ -53,6 +64,30 @@ class ProvenanceAgent:
                 "proof": record['txn_hash']
             }
         ]
+
+        if record['contract_address'] and record['token_id']:
+            try:
+                contract = self.web3.eth.contract(address=record['contract_address'], abi=self.nft_abi)
+                # Query Transfer events for this TokenID
+                events = contract.events.Transfer().get_logs(
+                    fromBlock=0,
+                    argument_filters={'tokenId': int(record['token_id'])}
+                )
+                
+                for event in events:
+                    if event.args['from'] == "0x0000000000000000000000000000000000000000":
+                        continue # Skip mint event as it's already Genesis
+                    
+                    block = self.web3.eth.get_block(event.blockNumber)
+                    timeline.append({
+                        "event": "Ownership Transfer",
+                        "actor": event.args['to'],
+                        "timestamp": datetime.fromtimestamp(block.timestamp).strftime('%Y-%m-%d %H:%M:%S'),
+                        "status": "Verified",
+                        "proof": event.transactionHash.hex()
+                    })
+            except Exception as e:
+                print(f"Provenance Trace Error: {e}")
 
         # 4. Anomaly Detection
         if not record['txn_hash']:
@@ -82,7 +117,20 @@ class ProvenanceAgent:
             "on_chain_proof": {
                 "contract": record['contract_address'],
                 "token_id": record['token_id'],
-                "txn": record['txn_hash']
+                "txn": record['txn_hash'],
+                "abi": [
+                    {
+                        "inputs": [
+                            {"internalType": "address", "name": "from", "type": "address"},
+                            {"internalType": "address", "name": "to", "type": "address"},
+                            {"internalType": "uint256", "name": "tokenId", "type": "uint256"}
+                        ],
+                        "name": "safeTransferFrom",
+                        "outputs": [],
+                        "stateMutability": "nonpayable",
+                        "type": "function"
+                    }
+                ]
             }
         }
         

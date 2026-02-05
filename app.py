@@ -8,6 +8,7 @@ import requests
 from web3 import Web3
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify, render_template, redirect, url_for, session
+from eth_hash.auto import keccak
 
 # Import local OCR module
 from local_ocr import extract_document_details
@@ -55,27 +56,30 @@ NFT_CONTRACT_ADDRESS = os.getenv("NFT_CONTRACT_ADDRESS", "0x00000000000000000000
 NFT_ABI = [
     {
         "inputs": [
-            {"internalType": "address", "name": "recipient", "type": "address"},
-            {"internalType": "bytes32", "name": "docHash", "type": "bytes32"}
+            {"internalType": "bytes32", "name": "fpHash", "type": "bytes32"},
+            {"internalType": "address", "name": "to", "type": "address"}
         ],
-        "name": "mintCertificate",
-        "outputs": [],
+        "name": "mintWithFingerprint",
+        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
         "stateMutability": "nonpayable",
         "type": "function"
     },
     {
         "inputs": [{"internalType": "uint256", "name": "tokenId", "type": "uint256"}],
-        "name": "documentHashes",
-        "outputs": [{"internalType": "bytes32", "name": "", "type": "bytes32"}],
+        "name": "ownerOf",
+        "outputs": [{"internalType": "address", "name": "", "type": "address"}],
         "stateMutability": "view",
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "nextTokenId",
-        "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-        "stateMutability": "view",
-        "type": "function"
+        "anonymous": False,
+        "inputs": [
+            {"indexed": True, "internalType": "address", "name": "from", "type": "address"},
+            {"indexed": True, "internalType": "address", "name": "to", "type": "address"},
+            {"indexed": True, "internalType": "uint256", "name": "tokenId", "type": "uint256"}
+        ],
+        "name": "Transfer",
+        "type": "event"
     }
 ]
 
@@ -99,7 +103,7 @@ def init_db():
             hackathon_name TEXT,   -- This will be Brand/Batch
             document_hash TEXT,    -- Unique Product Fingerprint
             txn_hash TEXT,
-            token_id INTEGER,
+            token_id TEXT,
             contract_address TEXT,
             timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             issuer_address TEXT,
@@ -113,7 +117,7 @@ def init_db():
     
     if 'token_id' not in columns:
         print("Migrating: Adding token_id column...")
-        conn.execute('ALTER TABLE documents ADD COLUMN token_id INTEGER')
+        conn.execute('ALTER TABLE documents ADD COLUMN token_id TEXT')
     
     if 'contract_address' not in columns:
         print("Migrating: Adding contract_address column...")
@@ -144,19 +148,26 @@ def normalize_text(text):
     text = re.sub(r'[^a-z0-9 ]', '', text)
     return text
 
-def calculate_hash(data):
+def calculate_keccak_fingerprint(data):
     """
-    Calculate SHA-256 hash of the entire document content.
-    This creates a unique Digital Fingerprint for any document.
+    Calculate Keccak-256 hash of the canonicalized product content.
+    Matches the on-chain hashing logic.
     """
     content = data.get("document_content", "")
     if not content:
-        # Fallback for old records or manual entry
-        keys = ["name", "brand", "batch_no"]
-        content = "|".join([normalize_text(data.get(k, "")) for k in keys])
+        # Fallback for manual entry
+        details = data.get("product_details", {})
+        parts = [
+            f"BRAND={details.get('brand', 'Unknown')}",
+            f"MODEL={data.get('product_name', 'Unknown')}",
+            f"SN={details.get('serial_no', 'Unknown')}",
+            f"MFG={details.get('mfg_date', 'Unknown')}"
+        ]
+        content = "|".join(parts)
     
-    normalized_content = normalize_text(content)
-    return hashlib.sha256(normalized_content.encode()).hexdigest()
+    # Canonicalize
+    canonical = str(content).strip().upper()
+    return compute_keccak_hash(canonical)
 
 def calculate_legacy_hash(data):
     """Calculate SHA-256 hash using the old JSON method (Legacy Logic)."""
@@ -201,6 +212,18 @@ def verify_on_chain(txn_hash, expected_hash):
         print(f"Blockchain Verification Error: {str(e)}")
         return False, f"Protocol Error: {str(e)}"
 
+def compute_keccak_hash(text):
+    """
+    Computes a Keccak256 hash (EVM native) of the canonical text.
+    Returns the hash as a hex string (with 0x prefix).
+    """
+    if not text:
+        return "0x" + "0" * 64
+    
+    # keccak from eth_hash expects bytes
+    hash_bytes = keccak(text.encode('utf-8'))
+    return "0x" + hash_bytes.hex()
+
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -244,25 +267,33 @@ def upload_and_issue():
         
         print(f"✓ Document Scanned. Content length: {len(doc_content)}")
 
-        # Calculate Digital Fingerprint
-        doc_hash = calculate_hash({"document_content": doc_content})
+        # Calculate Digital Fingerprint (Keccak256)
+        doc_hash = calculate_keccak_fingerprint({
+            "product_name": doc_title,
+            "product_details": {
+                "brand": details.get("brand", "Verified Brand"),
+                "serial_no": details.get("serial_no", "N/A"),
+                "mfg_date": details.get("mfg_date", "N/A")
+            }
+        })
 
         # 3. Blockchain Minting
-        token_id = 0 # Initialize token_id
+        token_id = int(doc_hash, 16)
         txn_hex = None
-        legacy_needed = False
         
         if NFT_CONTRACT_ADDRESS != "0x0000000000000000000000000000000000000000":
             try:
+                # Setup ABI for VeriChainProduct
+                # (We will load this from the compiled artifacts soon)
                 contract = web3.eth.contract(address=NFT_CONTRACT_ADDRESS, abi=NFT_ABI)
                 nonce = web3.eth.get_transaction_count(FROM_ADDRESS)
                 
                 # Convert hex hash to bytes32 for Solidity
                 bytes_hash = web3.to_bytes(hexstr=doc_hash)
                 
-                txn = contract.functions.mintCertificate(FROM_ADDRESS, bytes_hash).build_transaction({
+                txn = contract.functions.mintWithFingerprint(bytes_hash, FROM_ADDRESS).build_transaction({
                     'chainId': CHAIN_ID,
-                    'gas': 500000,
+                    'gas': 1000000,
                     'gasPrice': web3.to_wei('50', 'gwei'),
                     'nonce': nonce,
                 })
@@ -271,17 +302,14 @@ def upload_and_issue():
                 txn_send_hash = web3.eth.send_raw_transaction(signed_txn.raw_transaction)
                 txn_hex = web3.to_hex(txn_send_hash)
                 
-                print(f"Waiting for receipt for TX: {txn_hex}...")
-                receipt = web3.eth.wait_for_transaction_receipt(txn_send_hash, timeout=120)
-                print(f"Transaction mined in block: {receipt.blockNumber}")
+                print(f"Minting NFT for TokenID {token_id}...")
+                print(f"TX: {txn_hex}")
             except Exception as e:
-                print(f"Contract Minting Error: {str(e)}. Falling back to legacy anchor...")
-                legacy_needed = True
-        else:
-            legacy_needed = True
-
-        if legacy_needed:
-            # Legacy Data Anchor (Transaction to Null Address)
+                print(f"Contract Minting Error: {str(e)}")
+                # Fail gracefully for now
+        
+        if not txn_hex:
+            # Fallback legacy anchor if NFT mint fails
             print("Performing legacy data anchor on Neo X...")
             nonce = web3.eth.get_transaction_count(FROM_ADDRESS)
             txn = {
@@ -291,20 +319,18 @@ def upload_and_issue():
                 'gasPrice': web3.to_wei('50', 'gwei'),
                 'nonce': nonce,
                 'chainId': CHAIN_ID,
-                'data': "0x" + doc_hash
+                'data': doc_hash
             }
             signed_txn = web3.eth.account.sign_transaction(txn, PRIVATE_KEY)
             txn_send_hash = web3.eth.send_raw_transaction(signed_txn.raw_transaction)
             txn_hex = web3.to_hex(txn_send_hash)
-            
-            print(f"Legacy TX Sent: {txn_hex}. Waiting for receipt...")
-            web3.eth.wait_for_transaction_receipt(txn_send_hash, timeout=120)
-            token_id = 0 
 
         # 4. Store in Local DB
         conn = get_db_connection()
+        # Convert token_id to string to avoid "Python int too large to convert to SQLite INTEGER"
+        # SQLite INTEGER handles up to 8 bytes, but Keccak hashes are 32 bytes (256-bit).
         conn.execute('INSERT INTO documents (participant_name, hackathon_name, document_hash, txn_hash, token_id, contract_address, issuer_address, document_content) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                    (doc_title, "General Document", doc_hash, txn_hex, token_id, NFT_CONTRACT_ADDRESS, FROM_ADDRESS, doc_content))
+                    (doc_title, details.get("brand", "Genuine Brand"), doc_hash, txn_hex, str(token_id), NFT_CONTRACT_ADDRESS, FROM_ADDRESS, doc_content))
         conn.commit()
         conn.close()
 
@@ -313,7 +339,7 @@ def upload_and_issue():
             "product_name": doc_title,
             "hash": doc_hash,
             "txn_hash": txn_hex,
-            "token_id": token_id,
+            "token_id": str(token_id),
             "product_details": {
                 "brand": details.get("brand", "Verified Brand"),
                 "serial_no": details.get("serial_no", "N/A"),
@@ -336,11 +362,14 @@ def verify_document():
     - Handles OCR visual scan
     - Aligns noisy OCR with backend
     """
-    manual_hash = request.form.get('manual_hash', '').strip().lower()
+    manual_hash = request.form.get('manual_hash', '').strip()
+    clean_manual = manual_hash.lower()
+    if not clean_manual.startswith('0x'):
+        id_with_0x = '0x' + clean_manual
+    else:
+        id_with_0x = clean_manual
     
-    # NORMALIZE: Always strip 0x prefix if user included it
-    if manual_hash.startswith('0x'):
-        manual_hash = manual_hash[2:]
+    clean_no_0x = clean_manual.replace('0x', '')
         
     image_present = 'image' in request.files and request.files['image'].filename != ''
     
@@ -357,13 +386,17 @@ def verify_document():
         if manual_hash:
             print(f"🔍 System Search: ID [{manual_hash[:10]}...]")
             for r in records:
-                # Check both Document Fingerprint AND Blockchain Transaction Hash
+                # Check Document Fingerprint, Blockchain Txn, AND Token ID
                 db_hash = str(r['document_hash'] or "").lower()
-                db_txn = str(r['txn_hash'] or "").lower().replace('0x', '')
+                db_txn = str(r['txn_hash'] or "").lower()
+                db_token = str(r['token_id'] or "").lower()
                 
-                if db_hash == manual_hash or db_txn == manual_hash:
+                # Loose matching: check with and without 0x
+                if (db_hash in [id_with_0x, clean_no_0x] or 
+                    db_txn in [id_with_0x, clean_no_0x] or 
+                    db_token in [id_with_0x, clean_no_0x]):
                     record = r
-                    print(f"✓ Identity Found: {r['participant_name']} (Via {'Transaction' if db_txn == manual_hash else 'Fingerprint'})")
+                    print(f"✓ Identity Found: {r['participant_name']}")
                     break
         
         elif image_present:
@@ -376,7 +409,16 @@ def verify_document():
             doc_content = details.get("document_content", "")
             doc_title = details.get("document_title", "Untitled Document")
             
-            scanned_hash = calculate_hash({"document_content": doc_content})
+            # Use the same fingerprinting logic as registration
+            scanned_hash = calculate_keccak_fingerprint({
+                "product_name": doc_title,
+                "document_content": doc_content,
+                "product_details": {
+                    "brand": details.get("brand", "Verified Brand"),
+                    "serial_no": details.get("serial_no", "N/A"),
+                    "mfg_date": details.get("mfg_date", "N/A")
+                }
+            })
             print(f"✓ Scanned Fingerprint: {scanned_hash[:10]}...")
             
             # Direct Match
@@ -397,66 +439,71 @@ def verify_document():
         if not record:
             # --- PHASE 1.5: BLOCKCHAIN FALLBACK ---
             # If not in DB, check if the ID itself is a valid Transaction on Neo X
-            if manual_hash and len(manual_hash) >= 60:
-                print(f"⚓ Protocol Check: Searching Neo X for TX {manual_hash[:10]}...")
+            # or a Token ID
+            # Check if it's a Token ID (numeric string or hex)
+            if clean_no_0x.isdigit() or (id_with_0x.startswith("0x") and len(id_with_0x) > 10):
+                # Try as TokenID first
                 try:
-                    # Try fetching directly from the chain
-                    txn = web3.eth.get_transaction('0x' + manual_hash)
-                    if txn:
-                        print(f"✓ Found external transaction on-chain: {manual_hash[:10]}")
-                        input_data = txn.input
-                        if isinstance(input_data, bytes):
-                            input_data = input_data.hex()
-                        
-                        # Extract potential hash from input data
-                        # We look for a 64-character hex string (32 bytes)
-                        match = re.search(r'[0-9a-f]{64}', input_data.lower())
-                        if match:
-                            detected_hash = match.group(0)
-                            print(f"✓ Found document fingerprint in TX: {detected_hash[:10]}...")
-                            
-                            # Perform verification logic
-                            blockchain_verified, bc_msg = verify_on_chain('0x' + manual_hash, detected_hash)
-                            
-                            return jsonify({
-                                "status": "verified" if blockchain_verified else "failed",
-                                "message": f"Global Chain Match: {bc_msg}",
-                                "data": {
-                                    "title": "Verified Protocol Record",
-                                    "txn_hash": '0x' + manual_hash,
-                                    "hash": detected_hash,
-                                    "issuer_address": txn['from'],
-                                    "aadhaar_data": {
-                                        "name": "On-Chain Verified",
-                                        "address": "Refer to Transaction Log",
-                                        "phone": "N/A"
-                                    },
-                                    "blockchain_status": bc_msg,
-                                    "explorer_url": EXPLORER_URL
-                                }
-                            })
+                    token_id = int(id_with_0x, 16) if "x" in clean_manual else int(clean_no_0x)
+                    contract = web3.eth.contract(address=NFT_CONTRACT_ADDRESS, abi=NFT_ABI)
+                    owner = contract.functions.ownerOf(token_id).call()
+                    if owner:
+                        print(f"✓ Found Token {token_id} owned by {owner}")
+                        return jsonify({
+                            "status": "verified",
+                            "message": "Product Passport Verified On-Chain",
+                            "report": {
+                                "authenticity_status": "Authentic",
+                                "brand_verification": "Confirmed",
+                                "ownership_timeline": [
+                                    {"event": "Genesis Mint", "actor": owner, "timestamp": "On-Chain", "status": "Verified"}
+                                ],
+                                "transfer_integrity_score": 100,
+                                "risk_flags": [],
+                                "final_confidence_score": 100
+                            }
+                        })
                 except Exception as e:
-                    print(f"Blockchain fallback failed: {e}")
+                    print(f"Token lookup failed: {e}")
+
+            # Fallback to Txn lookup
+            if manual_hash.startswith("0x") and len(manual_hash) >= 64:
+                try:
+                    txn = web3.eth.get_transaction(manual_hash)
+                    if txn:
+                        return jsonify({
+                            "status": "verified",
+                            "message": "Transaction found on-chain",
+                            "report": {
+                                "authenticity_status": "Authentic",
+                                "brand_verification": "Confirmed",
+                                "ownership_timeline": [
+                                    {"event": "Registration", "actor": txn['from'], "timestamp": "On-Chain", "status": "Verified"}
+                                ],
+                                "transfer_integrity_score": 50,
+                                "risk_flags": ["Not registered in local index"],
+                                "final_confidence_score": 50
+                            }
+                        })
+                except Exception as e:
+                    print(f"Txn lookup failed: {e}")
 
             return jsonify({
                 "status": "not_found",
                 "message": "No matching record found in our database or on-chain.",
-                "data": {"blockchain_status": "Search Exhausted"}
+                "report": {
+                    "authenticity_status": "Counterfeit",
+                    "brand_verification": "Failed",
+                    "ownership_timeline": [],
+                    "transfer_integrity_score": 0,
+                    "risk_flags": ["No official registry entry found."],
+                    "final_confidence_score": 0
+                }
             })
 
-        # --- PHASE 2: BLOCKCHAIN PROOF ---
-        
-        stored_hash = record['document_hash']
-        txn_hash = record['txn_hash']
-        
-        print(f"⚓ Checking Neo X: TX {txn_hash[:10]}...")
-        blockchain_verified, bc_msg = verify_on_chain(txn_hash, stored_hash)
-        
-        # --- PHASE 3: RESPONSE ---
-        
         # --- PHASE 2: Intelligence Agent Analysis ---
         agent = ProvenanceAgent()
-        report = agent.analyze_product(manual_hash or doc_hash)
+        report = agent.analyze_product(record['document_hash'])
         
         return jsonify({
             "status": "verified" if report['authenticity_status'] == "Authentic" else "failed",
@@ -466,8 +513,53 @@ def verify_document():
 
     except Exception as e:
         import traceback
-        print(traceback.format_exc())
-        return jsonify({"error": str(e)}), 500
+@app.route('/api/history/<token_id>')
+def get_product_history(token_id):
+    """Fetch transfer history for a specific product NFT."""
+    try:
+        token_id_int = int(token_id)
+        contract = web3.eth.contract(address=NFT_CONTRACT_ADDRESS, abi=NFT_ABI)
+        
+        # Get Transfer events
+        try:
+            events = contract.events.Transfer().get_logs(
+                fromBlock=0,
+                argument_filters={'tokenId': token_id_int}
+            )
+        except:
+            events = []
+            
+        history = []
+        for event in events:
+            block = web3.eth.get_block(event.blockNumber)
+            history.append({
+                "from": event.args['from'],
+                "to": event.args['to'],
+                "block": event.blockNumber,
+                "timestamp": time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(block.timestamp)),
+                "txn_hash": event.transactionHash.hex()
+            })
+            
+        return jsonify({"success": True, "history": history})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route('/api/transfer', methods=['POST'])
+def initiate_transfer():
+    """Endpoint for initiating a transfer (returns txn data for MetaMask)."""
+    data = request.json
+    token_id = int(data.get('token_id'))
+    to_address = data.get('to_address')
+    
+    if not web3.is_address(to_address):
+        return jsonify({"success": False, "error": "Invalid recipient address"}), 400
+        
+    return jsonify({
+        "success": True,
+        "contract_address": NFT_CONTRACT_ADDRESS,
+        "token_id": token_id,
+        "to_address": to_address
+    })
 
 @app.route('/history')
 def history():

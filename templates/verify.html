@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Authenticity Scanner - VeriChain</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <style>
         :root {
             --primary: #c026d3;
@@ -399,6 +400,20 @@
                             TX: ${report.on_chain_proof.txn}
                         </code>
                     </div>
+
+                    <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(124, 58, 237, 0.05); border: 1px solid rgba(124, 58, 237, 0.2); border-radius: 16px;">
+                        <div class="input-label" style="color: var(--secondary);">Asset Operations</div>
+                        <p style="font-size: 0.8rem; color: #9ca3af; margin-bottom: 1rem;">Transfer this Product Passport to a new owner via MetaMask.</p>
+                        <div style="display: flex; gap: 0.75rem;">
+                            <input type="text" id="recipientAddress" placeholder="Recipient 0x..." 
+                                   style="flex: 1; margin: 0; font-size: 0.8rem; height: 45px;">
+                            <button onclick="handleTransfer('${report.on_chain_proof.token_id}')" 
+                                    class="btn btn-secondary" 
+                                    style="width: auto; padding: 0 1.5rem; height: 45px; font-size: 0.9rem;">
+                                Transfer
+                            </button>
+                        </div>
+                    </div>
                 `;
             } else {
                 status.className = 'status-box counterfeit';
@@ -444,6 +459,64 @@
                 });
                 renderResult(await res.json());
             } catch (e) { stopScanning(); }
+        }
+        async function handleTransfer(tokenId) {
+            const recipient = document.getElementById('recipientAddress').value.trim();
+            if (!recipient || !recipient.startsWith('0x')) return alert("Enter valid recipient address");
+
+            if (!window.ethereum) return alert("MetaMask not found");
+
+            try {
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                const signer = provider.getSigner();
+                const userAddress = await signer.getAddress();
+
+                // Get contract info from current state (we can store it in a global var)
+                // For simplicity, we'll fetch it from the backend via the trigger endpoint
+                const res = await fetch('/api/transfer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token_id: tokenId, to_address: recipient })
+                });
+                const config = await res.json();
+
+                if (!config.success) throw new Error(config.error);
+
+                // Initialize contract
+                const contract = new ethers.Contract(config.contract_address, [
+                    "function safeTransferFrom(address from, address to, uint256 tokenId)"
+                ], signer);
+
+                logStatus("Awaiting MetaMask confirmation...");
+                const tx = await contract.safeTransferFrom(userAddress, recipient, tokenId);
+                logStatus(`Transaction Broadcasted: ${tx.hash.substring(0, 10)}...`);
+
+                await tx.wait();
+                logStatus("✓ Transfer Confirmed on Neo X!");
+                alert("Transfer Successful!");
+
+                // Refresh records
+                location.reload();
+            } catch (e) {
+                console.error(e);
+                alert("Transfer failed: " + e.message);
+                logStatus(`Error: ${e.message}`);
+            }
+        }
+
+        async function syncHistory(tokenId) {
+            logStatus("Rebuilding blockchain provenance trace...");
+            try {
+                const res = await fetch(`/api/history/${tokenId}`);
+                const data = await res.json();
+                if (data.success) {
+                    logStatus(`Synchronized ${data.history.length} transfer events.`);
+                    // Optionally update the UI dynamically
+                }
+            } catch (e) {
+                logStatus("History sync failed.");
+            }
         }
     </script>
 </body>
