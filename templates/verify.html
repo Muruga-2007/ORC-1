@@ -4,15 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Document - VeriChain</title>
+    <title>Authenticity Scanner - VeriChain</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #00f2fe;
-            --secondary: #4facfe;
-            --bg: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --text: #f1f5f9;
+            --primary: #c026d3;
+            --secondary: #7c3aed;
+            --accent: #10b981;
+            --bg: #030712;
+            --card-bg: rgba(17, 24, 39, 0.8);
+            --text: #f9fafb;
         }
 
         * {
@@ -26,229 +27,264 @@
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+            background-image:
+                radial-gradient(circle at 10% 10%, rgba(192, 38, 211, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(124, 58, 237, 0.1) 0%, transparent 40%);
             padding: 2rem;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 700px;
             margin: 0 auto;
         }
 
         .back-btn {
-            color: #94a3b8;
+            color: #6b7280;
             text-decoration: none;
             display: flex;
             align-items: center;
             gap: 0.5rem;
             margin-bottom: 2rem;
+            font-weight: 600;
         }
 
         .glass-card {
             background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
             padding: 3rem;
             text-align: center;
+            box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scanner-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            box-shadow: 0 0 15px var(--primary);
+            z-index: 10;
+            animation: scan 3s infinite linear;
+            display: none;
+        }
+
+        @keyframes scan {
+            0% {
+                top: 0%;
+            }
+
+            100% {
+                top: 100%;
+            }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            letter-spacing: -1px;
+        }
+
+        .hash-input-group {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #4b5563;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.75rem;
+            text-align: left;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--primary);
+            font-family: monospace;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(192, 38, 211, 0.05);
         }
 
         .upload-area {
-            border: 2px dashed #334155;
-            border-radius: 20px;
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
             padding: 3rem;
-            margin: 2rem 0;
+            margin-bottom: 2rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
             position: relative;
         }
 
         .upload-area:hover {
             border-color: var(--secondary);
-            background: rgba(79, 172, 254, 0.05);
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        p {
-            color: #94a3b8;
-            margin-bottom: 2rem;
-        }
-
-        input[type="file"] {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 1rem 3rem;
-            border-radius: 50px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .btn-secondary {
-            background: linear-gradient(90deg, #a855f7, #ec4899);
-            color: #fff;
-        }
-
-        .status-box {
-            margin-top: 2rem;
-            padding: 2rem;
-            border-radius: 12px;
-            display: none;
-            text-align: left;
-        }
-
-        .success {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid #10b981;
-        }
-
-        .warning {
-            background: rgba(245, 158, 11, 0.1);
-            border: 1px solid #f59e0b;
-        }
-
-        .error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid #ef4444;
+            background: rgba(124, 58, 237, 0.03);
         }
 
         #preview {
             max-width: 100%;
-            border-radius: 12px;
+            max-height: 250px;
+            border-radius: 16px;
             display: none;
-            margin-top: 1.5rem;
+            margin: 1.5rem auto 0;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1.25rem;
+            border-radius: 16px;
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .btn-primary {
+            background: var(--text);
+            color: var(--bg);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            margin-top: 1rem;
+        }
+
+        .status-box {
+            margin-top: 2rem;
+            padding: 2.5rem;
+            border-radius: 24px;
+            display: none;
+            text-align: left;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .verified {
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .counterfeit {
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.05);
         }
 
         .loader {
-            width: 48px;
-            height: 48px;
-            border: 5px solid #FFF;
-            border-bottom-color: var(--secondary);
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.05);
+            border-left-color: var(--primary);
             border-radius: 50%;
             display: none;
             margin: 2rem auto;
-            animation: rotation 1s linear infinite;
+            animation: spin 1s linear infinite;
         }
 
-        @keyframes rotation {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
+        @keyframes spin {
+            to {
                 transform: rotate(360deg);
             }
-        }
-
-        .badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            margin-top: 10px;
-            display: inline-block;
-        }
-
-        .badge-verified {
-            background: #10b981;
-            color: white;
-        }
-
-        .badge-failed {
-            background: #ef4444;
-            color: white;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <a href="/" class="back-btn">← Back to Home</a>
-        <div class="glass-card">
-            <h1>Document Verification</h1>
-            <p>Verify the authenticity of a document using its visual scan or unique Fingerprint.</p>
+        <a href="/" class="back-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="19" y1="12" x2="5" y2="12" />
+                <polyline points="12 19 5 12 12 5" />
+            </svg>
+            Back to Home
+        </a>
 
-            <div
-                style="margin-bottom: 2rem; padding: 1.5rem; background: rgba(0, 242, 254, 0.05); border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 16px;">
-                <h3 style="margin-bottom: 1rem; font-size: 1rem; color: var(--primary);">Quick Verify by Hash ID</h3>
-                <div style="display: flex; gap: 0.5rem;">
-                    <input type="text" id="quickHash" placeholder="Enter Certificate Hash (64 chars)"
-                        style="flex: 1; padding: 0.8rem; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: var(--secondary); font-family: monospace; font-size: 0.8rem;">
-                    <button type="button" onclick="verifyByHash()" class="btn btn-primary"
-                        style="padding: 0.8rem 1.5rem; border-radius: 8px;">Verify</button>
+        <div class="glass-card">
+            <div class="scanner-line" id="scanner"></div>
+            <h1>Authenticity Scan</h1>
+            <p style="color: #6b7280; margin-bottom: 2.5rem;">Verify the origin and technical specs of any registered
+                product.</p>
+
+            <div class="hash-input-group">
+                <label class="input-label">Digital Fingerprint ID</label>
+                <div style="display: flex; gap: 0.75rem;">
+                    <input type="text" id="quickHash" placeholder="0x...">
+                    <button onclick="verifyByHash()"
+                        style="background: var(--primary); color: white; border: none; padding: 0 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer;">Scan</button>
                 </div>
             </div>
 
             <form id="verifyForm">
                 <div class="upload-area" id="dropZone">
-                    <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round"
-                        style="color: var(--secondary); margin-bottom: 1rem;">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="8" x2="12" y2="12"></line>
-                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
-                    <div id="uploadText">Drop File to Verify</div>
-                    <img id="preview" src="" alt="Preview">
+                    <div id="placeholder">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
+                            </path>
+                            <circle cx="12" cy="13" r="4"></circle>
+                        </svg>
+                        <div style="font-weight: 700; color: #9ca3af; margin-top: 1rem;">Upload Label Photo</div>
+                    </div>
+                    <img id="preview" src="">
                     <input type="file" name="image" id="fileInput" accept="image/*">
                 </div>
 
-                <div id="manualInput" style="display: none; text-align: left; margin-bottom: 2rem;">
-                    <p style="color: #f59e0b; font-size: 0.9rem; margin-bottom: 1rem;">⚠️ API busy? Enter details
-                        manually:</p>
-                    <div style="margin-bottom: 1rem;">
-                        <label
-                            style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: #94a3b8;">Certificate
-                            Fingerprint (Hash)</label>
-                        <input type="text" name="manual_hash" id="manualHash" placeholder="Enter the 64-char Hash"
-                            style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: var(--secondary); font-family: monospace; font-size: 0.8rem;">
-                    </div>
-                    <div style="margin-bottom: 1rem;">
-                        <label
-                            style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: #94a3b8;">Participant
-                            Name</label>
-                        <input type="text" name="manual_name" placeholder="Name on certificate"
-                            style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white;">
-                    </div>
-                    <div>
-                        <label
-                            style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: #94a3b8;">Hackathon
-                            Name</label>
-                        <input type="text" name="manual_hackathon" placeholder="e.g. Neo X Hackathon"
-                            style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white;">
-                    </div>
+                <div id="manualFields" style="display: none; margin-bottom: 2rem;">
+                    <input type="text" name="manual_hash" id="manualHash" placeholder="Backup ID Entry"
+                        style="border-radius: 12px;">
                 </div>
 
-                <button type="button"
-                    onclick="document.getElementById('manualInput').style.display='block'; this.style.display='none';"
-                    style="background: none; border: none; color: var(--secondary); cursor: pointer; margin-bottom: 1rem; font-size: 0.9rem;">+
-                    Manual Entry (API Fallback)</button>
-                <br>
-                <button type="submit" class="btn btn-secondary" id="submitBtn">Verify Now</button>
+                <button type="submit" class="btn btn-secondary" id="submitBtn">Analyze Authenticity</button>
             </form>
 
             <div class="loader" id="loader"></div>
+
             <div id="progressLogs"
-                style="text-align: left; font-size: 0.8rem; color: #94a3b8; margin-top: 1rem; border-top: 1px solid #334155; padding-top: 1rem; display: none;">
-                <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--secondary);">System Progress:</div>
-                <div id="logContent"></div>
+                style="text-align: left; font-size: 0.8rem; color: #4b5563; margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem; display: none;">
+                <div style="font-weight: 800; color: var(--accent); margin-bottom: 0.75rem; text-transform: uppercase;">
+                    Real-time Analysis</div>
+                <div id="logContent" style="font-family: monospace;"></div>
             </div>
+
             <div id="status" class="status-box"></div>
         </div>
     </div>
@@ -256,149 +292,116 @@
     <script>
         const fileInput = document.getElementById('fileInput');
         const preview = document.getElementById('preview');
-        const uploadText = document.getElementById('uploadText');
-        const form = document.getElementById('verifyForm');
+        const placeholder = document.getElementById('placeholder');
         const submitBtn = document.getElementById('submitBtn');
         const status = document.getElementById('status');
         const loader = document.getElementById('loader');
-        const progressLogs = document.getElementById('progressLogs');
+        const scanner = document.getElementById('scanner');
         const logContent = document.getElementById('logContent');
+        const progressLogs = document.getElementById('progressLogs');
+
+        function logStatus(msg) {
+            progressLogs.style.display = 'block';
+            const div = document.createElement('div');
+            div.style.marginBottom = '6px';
+            div.innerHTML = `<span style="color: var(--accent)">[SYS]</span> ${msg}`;
+            logContent.appendChild(div);
+        }
 
         async function verifyByHash() {
             const hash = document.getElementById('quickHash').value.trim();
-            if (!hash) {
-                alert("Please enter a Hash ID to verify.");
-                return;
-            }
+            if (!hash) return alert("Enter Product ID");
 
-            submitBtn.style.display = 'none';
-            loader.style.display = 'block';
-            status.style.display = 'none';
-            logContent.innerHTML = '';
-
-            logStatus("Global Protocol Scan initiated...");
-            logStatus("Targeting Hash: " + hash.substring(0, 16) + "...");
+            startScanning();
+            logStatus(`Targeting Product Identity: ${hash.substring(0, 10)}...`);
 
             const formData = new FormData();
             formData.append('manual_hash', hash);
 
             try {
-                const res = await fetch('/verify_document', {
-                    method: 'POST',
-                    body: formData
-                });
+                const res = await fetch('/verify_document', { method: 'POST', body: formData });
                 const result = await res.json();
-                handleVerificationResult(result);
-            } catch (err) {
-                console.error(err);
-                logStatus("System error during global scan.");
-                loader.style.display = 'none';
-                submitBtn.style.display = 'inline-block';
-            }
+                renderResult(result);
+            } catch (e) { stopScanning(); alert("Scan error"); }
         }
 
-        function handleVerificationResult(result) {
+        function startScanning() {
+            submitBtn.style.display = 'none';
+            loader.style.display = 'block';
+            scanner.style.display = 'block';
+            status.style.display = 'none';
+            logContent.innerHTML = '';
+            logStatus("Connecting to Neo X Protocol...");
+        }
+
+        function stopScanning() {
             loader.style.display = 'none';
+            scanner.style.display = 'none';
+            submitBtn.style.display = 'flex';
+        }
+
+        function renderResult(result) {
+            stopScanning();
             status.style.display = 'block';
 
             if (result.status === 'verified') {
-                status.className = 'status-box success';
+                status.className = 'status-box verified';
                 status.innerHTML = `
-                    <div style="font-size: 1.5rem; font-weight: 800; color: #10b981; margin-bottom: 1rem;">✅ VERIFIED</div>
-                    <p style="color: #f1f5f9; margin-bottom: 0.5rem"><strong>Document:</strong> ${result.data.title || 'Verified Record'}</p>
-                    <p style="color: #f1f5f9; margin-bottom: 0.5rem"><strong>Participant:</strong> ${result.data.aadhaar_data ? result.data.aadhaar_data.name : 'N/A'}</p>
-                    <div style="font-size: 0.75rem; color: #94a3b8; margin: 0.5rem 0;">Digital Fingerprint: ${result.data.hash}</div>
-                    <div class="badge badge-verified">${result.data.blockchain_status}</div>
-                    <p style="color: #94a3b8; font-size: 0.75rem; margin-top: 0.5rem; word-break: break-all;"><strong>Issuer:</strong> ${result.data.issuer_address || 'N/A'}</p>
-                    <div style="margin-top: 1rem;">
-                        <a href="${result.data.explorer_url}/tx/${result.data.txn_hash}" target="_blank" style="color: var(--secondary); font-size: 0.8rem; text-decoration: none;">View Proof on Blockchain Explorer →</a>
+                    <div style="color: var(--accent); font-weight: 800; font-size: 1.5rem; margin-bottom: 1.5rem;">GENUINE PRODUCT</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div>
+                            <div style="font-size: 0.7rem; font-weight: 800; color: #4b5563;">PRODUCT NAME</div>
+                            <div style="font-weight: 600;">${result.data.product_name}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.7rem; font-weight: 800; color: #4b5563;">BRAND OWNER</div>
+                            <div style="font-weight: 600;">${result.data.brand}</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                        <div style="font-size: 0.7rem; font-weight: 800; color: #4b5563; margin-bottom: 0.5rem;">ISSUER WALLET (AUTHENTIC)</div>
+                        <code style="font-size: 0.7rem; color: #9ca3af; word-break: break-all;">${result.data.issuer_address}</code>
+                    </div>
+                    <div style="margin-top: 2rem; text-align: center;">
+                        <a href="${result.data.explorer_url}/tx/${result.data.txn_hash}" target="_blank" style="color: var(--accent); text-decoration: none; font-weight: 800; font-size: 0.85rem;">VIEW IMMUTABLE LEDGER →</a>
                     </div>
                 `;
             } else {
-                status.className = 'status-box error';
-                const msg = result.status === 'tampered' ? "⚠️ FAKE / ALTERED" : "❌ NOT FOUND";
+                status.className = 'status-box counterfeit';
                 status.innerHTML = `
-                    <div style="font-size: 1.5rem; font-weight: 800; color: #ef4444; margin-bottom: 1rem;">${msg}</div>
-                    <p>${result.message || "This document could not be validated against blockchain records."}</p>
-                    ${result.data && result.data.hash ? `<div style="font-size: 0.75rem; color: #94a3b8; margin-top: 1rem;">Scanned Hash: ${result.data.hash}</div>` : ''}
+                    <div style="color: #ef4444; font-weight: 800; font-size: 1.5rem; margin-bottom: 1.25rem;">UNVERIFIED / COUNTERFEIT</div>
+                    <p style="color: #9ca3af; margin-bottom: 1rem;">This product fingerprint does not match any official brand registry on the blockchain.</p>
+                    <div style="font-size: 0.7rem; color: #4b5563; font-weight: 800;">WARNING: Potential illicit shipment or fake label detected.</div>
                 `;
-                submitBtn.style.display = 'inline-block';
             }
-        }
-
-        function logStatus(msg) {
-            progressLogs.style.display = 'block';
-            const logEntry = document.createElement('div');
-            logEntry.style.marginBottom = '4px';
-            logEntry.innerHTML = `> ${msg}`;
-            logContent.appendChild(logEntry);
-            progressLogs.scrollTop = progressLogs.scrollHeight;
         }
 
         fileInput.addEventListener('change', function () {
-            const file = this.files[0];
-            if (file) {
+            if (this.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function (e) {
+                reader.onload = e => {
                     preview.src = e.target.result;
                     preview.style.display = 'block';
-                    uploadText.style.display = 'none';
+                    placeholder.style.display = 'none';
                 }
-                reader.readAsDataURL(file);
+                reader.readAsDataURL(this.files[0]);
             }
         });
 
-        form.onsubmit = async (e) => {
+        document.getElementById('verifyForm').onsubmit = async (e) => {
             e.preventDefault();
-            const formData = new FormData(form);
-            const manualHash = document.getElementById('manualHash').value.trim();
-            const fileInput = document.getElementById('fileInput');
-
-            if (!fileInput.files.length && !manualHash) {
-                alert("Please upload a certificate OR enter its unique Fingerprint (Hash).");
-                return;
-            }
-
-            submitBtn.style.display = 'none';
-            loader.style.display = 'block';
-            status.style.display = 'none';
-            logContent.innerHTML = '';
-
-            logStatus("Initializing VeriChain Validator...");
-
-            if (manualHash) {
-                logStatus("Verification Mode: Deep-Link Hash Lookup...");
-                logStatus("Searching for Hash Signature: " + manualHash.substring(0, 16) + "...");
-            } else {
-                logStatus("Verification Mode: AI Visual Scanning...");
-                logStatus("Connecting to Gemini AI for Extraction...");
-            }
+            startScanning();
+            logStatus("Capturing high-resolution label markers...");
+            logStatus("Cross-referencing global authenticity index...");
 
             try {
                 const res = await fetch('/verify_document', {
                     method: 'POST',
-                    body: formData
+                    body: new FormData(e.target)
                 });
-
-                logStatus("Processing verification results...");
-                const result = await res.json();
-
-                if (result.status === 'error') {
-                    logStatus("Error: " + result.error);
-                } else {
-                    logStatus("Verification complete. Cross-referencing blockchain state...");
-                }
-
-                handleVerificationResult(result);
-            } catch (err) {
-                console.error(err);
-                loader.style.display = 'none';
-                status.style.display = 'block';
-                status.className = 'status-box error';
-                status.innerText = "System error occurred during verification.";
-                submitBtn.style.display = 'inline-block';
-            }
-        };
+                renderResult(await res.json());
+            } catch (e) { stopScanning(); }
+        }
     </script>
 </body>
 

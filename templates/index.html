@@ -4,15 +4,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VeriChain - Blockchain Verified OCR</title>
+  <title>VeriChain - Anti-Counterfeit Blockchain Protocol</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #00f2fe;
-      --secondary: #4facfe;
-      --bg: #0f172a;
-      --card-bg: rgba(30, 41, 59, 0.7);
-      --text: #f1f5f9;
+      --primary: #c026d3;
+      --secondary: #7c3aed;
+      --accent: #10b981;
+      --bg: #030712;
+      --card-bg: rgba(17, 24, 39, 0.8);
+      --text: #f9fafb;
     }
 
     * {
@@ -27,213 +28,322 @@
       color: var(--text);
       overflow-x: hidden;
       min-height: 100vh;
-      background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+      background-image:
+        radial-gradient(circle at 0% 0%, rgba(124, 58, 237, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(192, 38, 211, 0.15) 0%, transparent 50%);
     }
 
     .container {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 2rem;
+      padding: 0 2rem;
     }
 
-    nav {
+    header {
+      padding: 2rem 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1.5rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .logo {
-      font-size: 1.5rem;
-      font-weight: 700;
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-size: 1.75rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      letter-spacing: -1px;
+    }
+
+    .logo-icon {
+      width: 35px;
+      height: 35px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-links a {
+      color: #9ca3af;
+      text-decoration: none;
+      font-weight: 500;
+      margin-left: 2rem;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary);
     }
 
     .hero {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      min-height: 70vh;
-      gap: 2rem;
+      min-height: 80vh;
+      padding: 4rem 0;
+      gap: 4rem;
     }
 
     .hero-content {
-      flex: 1;
+      flex: 1.2;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background: rgba(192, 38, 211, 0.1);
+      border: 1px solid rgba(192, 38, 211, 0.2);
+      border-radius: 50px;
+      color: var(--primary);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
     .hero-title {
-      font-size: 4rem;
-      line-height: 1.1;
-      margin-bottom: 1.5rem;
-      font-weight: 700;
+      font-size: 4.5rem;
+      line-height: 1;
+      font-weight: 800;
+      margin-bottom: 2rem;
+      background: linear-gradient(to bottom right, #fff, #9ca3af);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
-    .hero-subtitle {
+    .hero-description {
       font-size: 1.25rem;
-      color: #94a3b8;
-      margin-bottom: 2rem;
+      color: #9ca3af;
+      margin-bottom: 3rem;
+      line-height: 1.6;
       max-width: 600px;
     }
 
+    .cta-group {
+      display: flex;
+      gap: 1.5rem;
+    }
+
     .btn {
-      display: inline-block;
-      padding: 1rem 2rem;
-      border-radius: 50px;
-      font-weight: 600;
+      padding: 1.25rem 2.5rem;
+      border-radius: 12px;
+      font-weight: 700;
       text-decoration: none;
-      transition: all 0.3s ease;
-      cursor: pointer;
-      border: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
 
     .btn-primary {
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
-      color: #000;
-      box-shadow: 0 10px 20px rgba(0, 242, 254, 0.2);
+      background: var(--text);
+      color: var(--bg);
     }
 
     .btn-primary:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 15px 30px rgba(0, 242, 254, 0.4);
+      transform: translateY(-5px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
     }
 
-    .btn-outline {
-      border: 2px solid #334155;
-      color: #f1f5f9;
-      margin-left: 1rem;
-    }
-
-    .btn-outline:hover {
-      background: #334155;
-    }
-
-    .glass-card {
-      background: var(--card-bg);
-      backdrop-filter: blur(10px);
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 24px;
-      padding: 2.5rem;
+      backdrop-filter: blur(10px);
     }
 
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
-      margin-top: 4rem;
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
     }
 
-    .feature-item {
-      padding: 2rem;
-      transition: transform 0.3s ease;
+    .hero-visual {
+      flex: 1;
+      position: relative;
     }
 
-    .feature-item:hover {
-      transform: scale(1.02);
+    .glass-box {
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 32px;
+      padding: 3rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
     }
 
-    .blob {
-      position: absolute;
-      width: 400px;
-      height: 400px;
-      background: var(--primary);
-      filter: blur(100px);
-      opacity: 0.1;
-      z-index: -1;
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .status-label {
+      color: #6b7280;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .status-value {
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
       border-radius: 50%;
+      animation: pulse-ring 1.5s infinite;
     }
 
-    @media (max-width: 768px) {
+    @keyframes pulse-ring {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(3);
+        opacity: 0;
+      }
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      padding: 4rem 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .stat-card h3 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-card p {
+      color: #6b7280;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    @media (max-width: 1024px) {
       .hero {
         flex-direction: column;
         text-align: center;
+        padding: 4rem 0;
+      }
+
+      .cta-group {
+        justify-content: center;
       }
 
       .hero-title {
-        font-size: 2.5rem;
+        font-size: 3.5rem;
       }
 
-      .btn-outline {
-        margin-left: 0;
-        margin-top: 1rem;
+      .hero-description {
+        margin: 0 auto 3rem;
       }
     }
   </style>
 </head>
 
 <body>
-  <div class="blob" style="top: 10%; right: 10%;"></div>
-  <div class="blob" style="bottom: 10%; left: 10%; background: var(--secondary);"></div>
-
   <div class="container">
-    <nav>
-      <div class="logo">VeriChain.</div>
-      <div>
-        <a href="/history" style="color: #94a3b8; text-decoration: none; font-weight: 500;">History</a>
+    <header>
+      <div class="logo">
+        <div class="logo-icon">V</div>
+        VeriChain
       </div>
-    </nav>
+      <nav class="nav-links">
+        <a href="/history">Ledger</a>
+        <a href="https://xt4scan.ngd.network" target="_blank">Neo X Explorer</a>
+      </nav>
+    </header>
 
-    <section class="hero">
-      <div class="hero-content">
-        <h1 class="hero-title">Automate <span style="color: var(--primary)">Verification</span> On-Chain.</h1>
-        <p class="hero-subtitle">The first document verification engine powered by Google Gemini OCR and Neo X
-          Blockchain. Secure, immutable, and instant.</p>
-        <div class="cta-group">
-          <a href="/upload_details" class="btn btn-primary">Issue New Certificate</a>
-          <a href="/verify" class="btn btn-outline">Verify Document</a>
-        </div>
-      </div>
-      <div class="hero-image">
-        <div class="glass-card" style="width: 100%; max-width: 450px;">
-          <div style="font-size: 0.8rem; color: var(--primary); margin-bottom: 1rem; font-weight: 600;">BLOCKCHAIN
-            STATUS</div>
-          <div
-            style="height: 15px; background: rgba(51, 65, 85, 0.5); border-radius: 10px; margin-bottom: 2rem; position: relative; overflow: hidden;">
-            <div
-              style="position: absolute; width: 60%; height: 100%; background: var(--primary); animation: slide 2s infinite linear;">
-            </div>
-          </div>
-          <style>
-            @keyframes slide {
-              from {
-                left: -60%;
-              }
-
-              to {
-                left: 100%;
-              }
-            }
-          </style>
-          <div style="color: #94a3b8; font-size: 0.9rem;">Connected to Neo X Testnet</div>
-          <div style="margin-top: 2rem; display: flex; align-items: center; gap: 1rem;">
-            <div
-              style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981;">
-            </div>
-            <div style="font-weight: 600;">System Active</div>
+    <main>
+      <section class="hero">
+        <div class="hero-content">
+          <div class="badge">Brand Protection v2.0</div>
+          <h1 class="hero-title">Eliminate <br><span style="color: var(--primary)">Counterfeits</span> Forever.</h1>
+          <p class="hero-description">The world's most advanced product authenticity protocol. Using AI-driven label
+            scanning and Neo X blockchain indexing to secure your global supply chain.</p>
+          <div class="cta-group">
+            <a href="/upload_details" class="btn btn-primary">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v20M2 12h20" />
+              </svg>
+              Register Product
+            </a>
+            <a href="/verify" class="btn btn-secondary">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
+              Scan for Authenticity
+            </a>
           </div>
         </div>
-      </div>
-    </section>
 
-    <div class="feature-grid">
-      <div class="glass-card feature-item">
-        <h3 style="margin-bottom: 1rem; color: var(--primary);">Gemini OCR</h3>
-        <p style="color: #94a3b8; font-size: 0.95rem;">Advanced AI-powered text extraction with 99.9% accuracy across
-          multiple document formats.</p>
-      </div>
-      <div class="glass-card feature-item">
-        <h3 style="margin-bottom: 1rem; color: var(--secondary);">Neo X Immutable</h3>
-        <p style="color: #94a3b8; font-size: 0.95rem;">Every document hash is anchored to the Neo X Testnet, ensuring
-          absolute tamper-resistance.</p>
-      </div>
-      <div class="glass-card feature-item">
-        <h3 style="margin-bottom: 1rem; color: #a855f7;">Instant Validation</h3>
-        <p style="color: #94a3b8; font-size: 0.95rem;">Verify the authenticity of any document in seconds by
-          cross-referencing on-chain fingerprints.</p>
-      </div>
-    </div>
+        <div class="hero-visual">
+          <div class="glass-box">
+            <div class="status-item">
+              <div class="status-label">PROTOCOL STATUS</div>
+              <div class="status-value">
+                <div class="pulse"></div>
+                LIVE ON NEO X
+              </div>
+            </div>
+            <div class="status-item">
+              <div class="status-label">ENCRYPTION</div>
+              <div class="status-value">SHA-256 SECURE</div>
+            </div>
+            <div class="status-item" style="border: none; margin: 0; padding: 0;">
+              <div class="status-label">VERIFIED PRODUCTS</div>
+              <div class="status-value" id="count-value" style="color: var(--primary);">2,541</div>
+            </div>
+
+            <div
+              style="margin-top: 3rem; background: rgba(0,0,0,0.3); border-radius: 16px; padding: 1.5rem; border: 1px solid rgba(255,255,255,0.05);">
+              <div style="font-size: 0.7rem; color: #4b5563; font-weight: 800; margin-bottom: 0.5rem;">LATEST ON-CHAIN
+                HASH</div>
+              <code
+                style="font-size: 0.75rem; color: var(--accent); word-break: break-all; font-family: monospace;">0x46b0113b907a812a2...deee382e3</code>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats-grid">
+        <div class="stat-card">
+          <h3>99.9%</h3>
+          <p>Detection Rate</p>
+        </div>
+        <div class="stat-card">
+          <h3>&lt; 3s</h3>
+          <p>Scan Response</p>
+        </div>
+        <div class="stat-card">
+          <h3>$0 Gas</h3>
+          <p>Optimized Protocol</p>
+        </div>
+      </section>
+    </main>
   </div>
 </body>
 

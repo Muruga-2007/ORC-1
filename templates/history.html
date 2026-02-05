@@ -4,15 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Issuance History - VeriChain</title>
+    <title>Authenticity Ledger - VeriChain</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #00f2fe;
-            --secondary: #4facfe;
-            --bg: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --text: #f1f5f9;
+            --primary: #c026d3;
+            --secondary: #7c3aed;
+            --bg: #030712;
+            --card-bg: rgba(17, 24, 39, 0.8);
+            --text: #f9fafb;
         }
 
         * {
@@ -26,7 +26,7 @@
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+            background-image: radial-gradient(circle at 50% 10%, #111827 0%, #030712 100%);
             padding: 2rem;
         }
 
@@ -35,105 +35,149 @@
             margin: 0 auto;
         }
 
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
         .back-btn {
-            color: #94a3b8;
+            color: #6b7280;
             text-decoration: none;
+            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
         }
 
         .glass-card {
             background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 24px;
-            padding: 2rem;
-            overflow-x: auto;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 1rem;
+            text-align: left;
         }
 
         th {
-            text-align: left;
-            padding: 1rem;
-            color: var(--primary);
-            border-bottom: 1px solid #334155;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1.25rem 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         td {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             font-size: 0.9rem;
         }
 
-        .txn-link {
-            color: var(--secondary);
-            text-decoration: none;
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .hash-tag {
             font-family: monospace;
-        }
-
-        .txn-link:hover {
-            text-decoration: underline;
-        }
-
-        .timestamp {
+            color: var(--primary);
+            background: rgba(192, 38, 211, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
             font-size: 0.8rem;
-            color: #94a3b8;
+        }
+
+        .status-pill {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            text-transform: uppercase;
+        }
+
+        .explorer-link {
+            color: #6b7280;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .explorer-link:hover {
+            color: var(--text);
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <a href="/" class="back-btn">← Back to Home</a>
-        <h1>Issuance History</h1>
+        <div class="header">
+            <a href="/" class="back-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="19" y1="12" x2="5" y2="12" />
+                    <polyline points="12 19 5 12 12 5" />
+                </svg>
+                Back
+            </a>
+            <h1>Authenticity Ledger</h1>
+        </div>
+
         <div class="glass-card">
             <table>
                 <thead>
                     <tr>
-                        <th>Participant</th>
-                        <th>Hackathon</th>
-                        <th>NFT Token ID</th>
-                        <th>Hash Fingerprint</th>
-                        <th>Issuer</th>
-                        <th>Blockchain TX</th>
-                        <th>Date</th>
+                        <th>Product / Brand</th>
+                        <th>Digital Fingerprint</th>
+                        <th>Status</th>
+                        <th>Timestamp</th>
+                        <th>Blockchain</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for doc in documents %}
                     <tr>
-                        <td style="font-weight: 600;">{{ doc['participant_name'] }}</td>
-                        <td>{{ doc['hackathon_name'] }}</td>
-                        <td>#{{ doc['token_id'] }}</td>
-                        <td title="{{ doc['document_hash'] }}"><code
-                                style="font-size: 0.75rem; color: var(--secondary);">{{ doc['document_hash'][:12] }}...</code>
+                        <td>
+                            <div style="font-weight: 700;">{{ doc.participant_name }}</div>
+                            <div style="font-size: 0.8rem; color: #6b7280;">{{ doc.hackathon_name }}</div>
                         </td>
-                        <td><code style="font-size: 0.75rem;"
-                                title="{{ doc['issuer_address'] }}">{{ doc['issuer_address'][:10] }}...</code></td>
-                        <td><a href="{{ explorer_url }}/tx/{{ doc['txn_hash'] }}" target="_blank" class="txn-link"
-                                title="{{ doc['txn_hash'] }}">{{
-                                doc['txn_hash'][:12] }}...</a></td>
-                        <td class="timestamp">{{ doc['timestamp'] }}</td>
+                        <td>
+                            <code class="hash-tag">{{ doc.document_hash[:16] }}...</code>
+                        </td>
+                        <td>
+                            <span class="status-pill">Anchored</span>
+                        </td>
+                        <td style="color: #6b7280; font-size: 0.8rem;">
+                            {{ doc.timestamp }}
+                        </td>
+                        <td>
+                            <a href="{{ explorer_url }}/tx/{{ doc.txn_hash }}" target="_blank" class="explorer-link">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                    <polyline points="15 3 21 3 21 9"></polyline>
+                                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                                </svg>
+                            </a>
+                        </td>
                     </tr>
                     {% endfor %}
-                    {% if not documents %}
-                    <tr>
-                        <td colspan="4" style="text-align: center; padding: 3rem; color: #94a3b8;">No records found.
-                            Issue your first certificate!</td>
-                    </tr>
-                    {% endif %}
                 </tbody>
             </table>
         </div>

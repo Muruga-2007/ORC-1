@@ -4,15 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Issue Certificate - VeriChain</title>
+    <title>Register Product - VeriChain Anti-Counterfeit</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #00f2fe;
-            --secondary: #4facfe;
-            --bg: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
-            --text: #f1f5f9;
+            --primary: #c026d3;
+            --secondary: #7c3aed;
+            --bg: #030712;
+            --card-bg: rgba(17, 24, 39, 0.8);
+            --text: #f9fafb;
         }
 
         * {
@@ -26,56 +26,68 @@
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            background-image: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+            background-image: radial-gradient(circle at 50% 50%, #111827 0%, #030712 100%);
             padding: 2rem;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 700px;
             margin: 0 auto;
         }
 
         .back-btn {
-            color: #94a3b8;
+            color: #6b7280;
             text-decoration: none;
             display: flex;
             align-items: center;
             gap: 0.5rem;
             margin-bottom: 2rem;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .back-btn:hover {
+            color: var(--primary);
         }
 
         .glass-card {
             background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 32px;
             padding: 3rem;
             text-align: center;
-        }
-
-        .upload-area {
-            border: 2px dashed #334155;
-            border-radius: 20px;
-            padding: 3rem;
-            margin: 2rem 0;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .upload-area:hover {
-            border-color: var(--primary);
-            background: rgba(0, 242, 254, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
         h1 {
             font-size: 2.5rem;
-            margin-bottom: 1rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
         }
 
-        p {
-            color: #94a3b8;
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 3rem;
+            font-weight: 500;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 4rem 2rem;
             margin-bottom: 2rem;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(192, 38, 211, 0.05);
+            transform: translateY(-2px);
         }
 
         input[type="file"] {
@@ -89,129 +101,187 @@
         }
 
         .btn {
-            display: inline-block;
-            padding: 1rem 3rem;
-            border-radius: 50px;
-            font-weight: 600;
+            width: 100%;
+            padding: 1.25rem;
+            border-radius: 16px;
+            font-weight: 700;
             border: none;
             cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
         }
 
         .btn-primary {
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            color: #000;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 10px 20px rgba(192, 38, 211, 0.2);
         }
 
-        .btn-loading {
-            opacity: 0.7;
-            cursor: wait;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(192, 38, 211, 0.4);
         }
 
         #preview {
             max-width: 100%;
-            border-radius: 12px;
+            max-height: 300px;
+            border-radius: 16px;
             display: none;
-            margin-top: 1.5rem;
+            margin: 0 auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .status-box {
             margin-top: 2rem;
-            padding: 1.5rem;
-            border-radius: 12px;
+            padding: 2rem;
+            border-radius: 20px;
             display: none;
+            text-align: left;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .success {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid #10b981;
-            color: #10b981;
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.2);
         }
 
         .error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid #ef4444;
-            color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.2);
         }
 
         .loader {
-            width: 48px;
-            height: 48px;
-            border: 5px solid #FFF;
-            border-bottom-color: var(--primary);
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: var(--primary);
             border-radius: 50%;
             display: none;
             margin: 2rem auto;
-            animation: rotation 1s linear infinite;
+            animation: spin 1s linear infinite;
         }
 
-        @keyframes rotation {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
+        @keyframes spin {
+            to {
                 transform: rotate(360deg);
             }
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <a href="/" class="back-btn">← Back to Home</a>
+        <a href="/" class="back-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12" />
+                <polyline points="12 19 5 12 12 5" />
+            </svg>
+            Back to Registry
+        </a>
+
         <div class="glass-card">
-            <h1>Issue Certificate</h1>
-            <p>Upload a certificate image to extract data and anchor it to Neo X.</p>
+            <h1>Register Product</h1>
+            <p class="subtitle">Secure your product's identity on the Neo X immutable ledger.</p>
 
             <form id="issueForm">
                 <div class="upload-area" id="dropZone">
-                    <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round"
-                        style="color: var(--primary); margin-bottom: 1rem;">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="17 8 12 3 7 8"></polyline>
-                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                    </svg>
-                    <div id="uploadText">Drag & Drop or Click to Upload</div>
+                    <div id="uploadPlaceholder">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1.5rem;">
+                            <path
+                                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                            </path>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
+                        <div style="font-weight: 700; color: #9ca3af;">Upload Product Label / Invoice</div>
+                        <div style="font-size: 0.85rem; color: #4b5563; margin-top: 0.5rem;">AI will automatically index
+                            technical specs</div>
+                    </div>
                     <img id="preview" src="" alt="Preview">
                     <input type="file" name="image" id="fileInput" accept="image/*" required>
                 </div>
 
-                <div id="manualInput" style="display: none; text-align: left; margin-bottom: 2rem;">
-                    <p style="color: #f59e0b; font-size: 0.9rem; margin-bottom: 1rem;">⚠️ API busy? Enter details
-                        manually:</p>
-                    <div style="margin-bottom: 1rem;">
-                        <label
-                            style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: #94a3b8;">Participant
-                            Name</label>
-                        <input type="text" name="manual_name" placeholder="Name on certificate"
-                            style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white;">
+                <div id="manualInput" style="display: none; margin-bottom: 2rem;">
+                    <div class="form-group">
+                        <label>Product Name</label>
+                        <input type="text" name="manual_title" placeholder="e.g. Rolex Submariner v2">
                     </div>
-                    <div>
-                        <label
-                            style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: #94a3b8;">Hackathon
-                            Name</label>
-                        <input type="text" name="manual_hackathon" placeholder="e.g. Neo X Hackathon"
-                            style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white;">
+                    <div class="form-group">
+                        <label>Manufacturer / Brand</label>
+                        <input type="text" name="manual_content" placeholder="Technical specifications or Batch ID">
                     </div>
                 </div>
 
                 <button type="button"
                     onclick="document.getElementById('manualInput').style.display='block'; this.style.display='none';"
-                    style="background: none; border: none; color: var(--secondary); cursor: pointer; margin-bottom: 1rem; font-size: 0.9rem;">+
-                    Manual Entry (API Fallback)</button>
-                <br>
-                <button type="submit" class="btn btn-primary" id="submitBtn">Issue to Blockchain</button>
+                    style="background: none; border: none; color: #4b5563; cursor: pointer; margin-bottom: 2rem; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+                    Edit Details Manually
+                </button>
+
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    Register on Blockchain
+                </button>
             </form>
 
             <div class="loader" id="loader"></div>
+
             <div id="progressLogs"
-                style="text-align: left; font-size: 0.8rem; color: #94a3b8; margin-top: 1rem; border-top: 1px solid #334155; padding-top: 1rem; display: none;">
-                <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary);">System Progress:</div>
-                <div id="logContent"></div>
+                style="text-align: left; font-size: 0.8rem; color: #4b5563; margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 1.5rem; display: none;">
+                <div
+                    style="font-weight: 800; color: var(--primary); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">
+                    System Pipeline</div>
+                <div id="logContent" style="font-family: monospace;"></div>
             </div>
+
             <div id="status" class="status-box"></div>
         </div>
     </div>
@@ -219,7 +289,7 @@
     <script>
         const fileInput = document.getElementById('fileInput');
         const preview = document.getElementById('preview');
-        const uploadText = document.getElementById('uploadText');
+        const placeholder = document.getElementById('uploadPlaceholder');
         const form = document.getElementById('issueForm');
         const submitBtn = document.getElementById('submitBtn');
         const status = document.getElementById('status');
@@ -229,23 +299,21 @@
 
         function logStatus(msg) {
             progressLogs.style.display = 'block';
-            const logEntry = document.createElement('div');
-            logEntry.style.marginBottom = '4px';
-            logEntry.innerHTML = `> ${msg}`;
-            logContent.appendChild(logEntry);
-            progressLogs.scrollTop = progressLogs.scrollHeight;
+            const entry = document.createElement('div');
+            entry.style.marginBottom = '6px';
+            entry.innerHTML = `<span style="color: var(--primary)">[OK]</span> ${msg}`;
+            logContent.appendChild(entry);
         }
 
         fileInput.addEventListener('change', function () {
-            const file = this.files[0];
-            if (file) {
+            if (this.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function (e) {
+                reader.onload = e => {
                     preview.src = e.target.result;
                     preview.style.display = 'block';
-                    uploadText.style.display = 'none';
+                    placeholder.style.display = 'none';
                 }
-                reader.readAsDataURL(file);
+                reader.readAsDataURL(this.files[0]);
             }
         });
 
@@ -258,20 +326,15 @@
             status.style.display = 'none';
             logContent.innerHTML = '';
 
-            logStatus("Analyzing document structure...");
-            logStatus("Extracting data via Gemini AI...");
+            logStatus("Initializing AI Vision Engine...");
+            logStatus("Scanning labels for anti-counterfeit signatures...");
 
             try {
-                const res = await fetch('/upload_and_issue', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                logStatus("Computing SHA-256 Fingerprint...");
+                const res = await fetch('/upload_and_issue', { method: 'POST', body: formData });
                 const data = await res.json();
 
-                logStatus("Anchoring NFT to Polygon Amoy...");
-                logStatus("Waiting for blockchain confirmation (~3s)...");
+                logStatus("Generating Product Fingerprint (SHA-256)...");
+                logStatus("Anchoring to Neo X Distributed Ledger...");
 
                 loader.style.display = 'none';
                 status.style.display = 'block';
@@ -279,24 +342,30 @@
                 if (data.status === 'success') {
                     status.className = 'status-box success';
                     status.innerHTML = `
-                        <strong>Successfully Issued NFT Certificate!</strong><br>
-                        Participant: ${data.name}<br>
-                        Hackathon: ${data.hackathon}<br>
-                        Token ID: #${data.token_id}<br>
-                        <div style="font-size: 0.75rem; color: #94a3b8; margin: 0.5rem 0;">Hash: ${data.hash}</div>
-                        TX Hash: <a href="${data.explorer_url}/tx/${data.txn_hash}" target="_blank" style="color: inherit; overflow-wrap: break-word;">${data.txn_hash.substring(0, 20)}...</a>
+                        <div style="color: #10b981; font-weight: 800; font-size: 1.25rem; margin-bottom: 1rem;">SECURELY REGISTERED</div>
+                        <div style="margin-bottom: 1rem;">
+                            <div style="font-size: 0.75rem; font-weight: 800; color: #4b5563;">PRODUCT NAME</div>
+                            <div style="font-weight: 600;">${data.product_name}</div>
+                        </div>
+                        <div onclick="navigator.clipboard.writeText('${data.hash}'); alert('Product ID copied!')" style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 12px; cursor: pointer; border: 1px solid rgba(255,255,255,0.05);">
+                            <div style="font-size: 0.7rem; font-weight: 800; color: #4b5563; margin-bottom: 0.5rem;">UNIQUE AUTHENTICITY HASH (CLICK TO COPY)</div>
+                            <code style="font-size: 0.75rem; color: #10b981; word-break: break-all;">${data.hash}</code>
+                        </div>
+                        <div style="margin-top: 1.5rem; text-align: center;">
+                            <a href="${data.explorer_url}/tx/${data.txn_hash}" target="_blank" style="color: var(--primary); text-decoration: none; font-weight: 700; font-size: 0.85rem;">VIEW ON-CHAIN PROOF →</a>
+                        </div>
                     `;
                 } else {
                     status.className = 'status-box error';
-                    status.innerText = "Error: " + (data.error || "Upload failed");
-                    submitBtn.style.display = 'inline-block';
+                    status.innerText = "Error: " + (data.error || "Registry failed");
+                    submitBtn.style.display = 'flex';
                 }
             } catch (err) {
                 loader.style.display = 'none';
                 status.style.display = 'block';
                 status.className = 'status-box error';
-                status.innerText = "System error occurred.";
-                submitBtn.style.display = 'inline-block';
+                status.innerText = "Network protocol error.";
+                submitBtn.style.display = 'flex';
             }
         };
     </script>
