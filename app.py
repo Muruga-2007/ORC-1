@@ -18,6 +18,8 @@ from hash_validator import HashValidator
 load_dotenv()
 
 # Configuration
+from provenance_agent import ProvenanceAgent
+
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY", "super-secret-key-for-mvp")
 UPLOAD_FOLDER = 'uploads'
@@ -452,22 +454,14 @@ def verify_document():
         
         # --- PHASE 3: RESPONSE ---
         
+        # --- PHASE 2: Intelligence Agent Analysis ---
+        agent = ProvenanceAgent()
+        report = agent.analyze_product(manual_hash or doc_hash)
+        
         return jsonify({
-            "status": "verified" if blockchain_verified else "failed",
-            "message": f"Global Authenticity Check: {bc_msg}",
-            "data": {
-                "product_name": record['participant_name'],
-                "brand": record['hackathon_name'],
-                "txn_hash": txn_hash,
-                "hash": stored_hash,
-                "issuer_address": record['issuer_address'] if 'issuer_address' in record.keys() else None,
-                "product_details": {
-                    "scan_origin": "Genuine Label Scan",
-                    "verification_type": "On-Chain Protocol 2.0"
-                },
-                "blockchain_status": bc_msg,
-                "explorer_url": EXPLORER_URL
-            }
+            "status": "verified" if report['authenticity_status'] == "Authentic" else "failed",
+            "message": f"Provenance Intelligence Check Complete",
+            "report": report
         })
 
     except Exception as e:
